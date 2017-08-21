@@ -28,24 +28,24 @@
 # 
 # ----------------------------------------------------------------------------
 # 
-#  Create Date:         Feb 03, 2017
-#  Design Name:         MiniZed PetaLinux BSP HW Platform
-#  Module Name:         make_minized_petalinux.tcl
-#  Project Name:        MiniZed PetaLinux BSP Generator
+#  Create Date:         Aug 14, 2017
+#  Design Name:         MiniZed SpeedWay HW Platform
+#  Module Name:         make_minized_speedway.tcl
+#  Project Name:        MiniZed SpeedWay Training
 #  Target Devices:      Xilinx Zynq-7000
 #  Hardware Boards:     MiniZed SOM
 # 
-#  Tool versions:       Xilinx Vivado 2016.4
+#  Tool versions:       Xilinx Vivado 2017.1
 # 
-#  Description:         Build Script for MiniZed PetaLinux BSP HW Platform
+#  Description:         Build Script for MiniZed SpeedWay HW Platform
 # 
 #  Dependencies:        make.tcl
 #
-#  Revision:            Feb 03, 2017: 1.00 Initial version
+#  Revision:            Aug 14, 2017: 1.00 Initial version
 # 
 # ----------------------------------------------------------------------------
 
-# Build PetaLinux BSP HW Platform for MiniZed 
-set argv [list board=MINIZED project=minized_petalinux sdk=yes close_project=yes version_override=yes]
+# Build SpeedWay HW Platform for MiniZed 
+set argv [list board=MINIZED project=minized_speedway sdk=yes close_project=yes version_override=yes]
 set argc [llength $argv]
 source ./make.tcl -notrace
