@@ -1,11 +1,15 @@
 # ----------------------------------------------------------------------------
-#       _____
-#      *     *
-#     *____   *____
-#    * *===*   *==*
-#   *___*===*___**  AVNET
-#        *======*
-#         *====*
+#
+#        ** **        **          **  ****      **  **********  ********** ®
+#       **   **        **        **   ** **     **  **              **
+#      **     **        **      **    **  **    **  **              **
+#     **       **        **    **     **   **   **  *********       **
+#    **         **        **  **      **    **  **  **              **
+#   **           **        ****       **     ** **  **              **
+#  **  .........  **        **        **      ****  **********      **
+#     ...........
+#                                     Reach Further™
+#
 # ----------------------------------------------------------------------------
 # 
 #  This design is the property of Avnet.  Publication of this
@@ -23,30 +27,31 @@
 #     any errors, which may appear in this code, nor does it make a commitment
 #     to update the information contained herein. Avnet, Inc specifically
 #     disclaims any implied warranties of fitness for a particular purpose.
-#                      Copyright(c) 2016 Avnet, Inc.
+#                      Copyright(c) 2017 Avnet, Inc.
 #                              All rights reserved.
 # 
 # ----------------------------------------------------------------------------
 # 
-#  Create Date:         Jul 01, 2016
-#  Design Name:         UltraZed PetaLinux BSP HW Platform
+#  Create Date:         Oct 02, 2017
+#  Design Name:         UltraZed CCD HW Platform
 #  Module Name:         uz_petalinux.tcl
-#  Project Name:        UltraZed PetaLinux BSP Generator
+#  Project Name:        UltraZed CCD Generator
 #  Target Devices:      Xilinx Zynq UltraScale+ 3EG
 #  Hardware Boards:     UltraZed SOM
 # 
-#  Tool versions:       Vivado 2016.2
+#  Tool versions:       Vivado 2017.2
 # 
-#  Description:         Build Script for UltraZed PetaLinux BSP HW Platform
+#  Description:         Build Script for UltraZed CCD HW Platform
 # 
 #  Dependencies:        To be called from a configured make script call
 #                       Calls support scripts, such as board configuration 
 #                       scripts IP generation scripts or others as needed
 # 
 #
-#  Revision:            Jul 01, 2016: 1.00 Initial version
-#                       Jan 05, 2017: 1.01 Added support for PCIe Carrier
-#                       Aug 23, 2017: 1.02 Updated for 2017.2 tools
+#  Revision:            Oct 02, 2017: 1.00 Created based upon uz_petalinux but 
+#                                          addding a call to enable PSU SPI on
+#                                          PS Pmod so that the TPM Pmod can be 
+#                                          connected for CCD.
 # 
 # ----------------------------------------------------------------------------
 
@@ -82,6 +87,10 @@ switch -nocase $board {
       puts "***** Assigning Vivado Project board_part Property to ultrazed_eg_iocc_production..."
       set_property board_part em.avnet.com:ultrazed_eg_iocc_production:part0:1.0 [current_project]
    }
+   UZ3EG_PCIEC {
+      puts "***** Assigning Vivado Project board_part Property to ultrazed_eg_pciecc_production..."
+      set_property board_part em.avnet.com:ultrazed_eg_pciecc_production:part0:1.0 [current_project]
+   }
 }
 
 # Create Block Design and Add PS core
@@ -95,18 +104,13 @@ avnet_add_ps_preset $project $projects_folder $scriptdir
 # Add User IO presets from board definitions.
 avnet_add_user_io_preset $project $projects_folder $scriptdir
 
+# Enable the PSU SPI interface on the Pmod expansion port so that the TPM Pmod
+# can be connected to the system.
+set_property -dict [list CONFIG.PSU__SPI0__PERIPHERAL__ENABLE {1} CONFIG.PSU__SPI0__PERIPHERAL__IO {MIO 38 .. 43} CONFIG.PSU__SPI1__PERIPHERAL__ENABLE {0}] [get_bd_cells zynq_ultra_ps_e_0]
+
 # General Config
 puts "***** General Configuration for Design..."
 set_property target_language VHDL [current_project]
-
-# Add the constraints that are needed for testing
-#add_files -fileset constrs_1 -norecurse ${projects_folder}/../uz3eg_iocc_dp.xdc
-add_files -fileset constrs_1 -norecurse ${projects_folder}/../uz3eg_iocc_dp_es1.xdc
-
-# Create Block Diagram
-set design_name ${project}
-#source ${projects_folder}/../../../Scripts/ProjectScripts/${project}_bd.tcl
-source ${projects_folder}/../../../Scripts/ProjectScripts/${project}_bd_es1.tcl
 
 # Add Project source files
 puts "***** Adding Source Files to Block Design..."
