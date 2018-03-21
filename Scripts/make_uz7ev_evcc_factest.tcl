@@ -32,42 +32,27 @@
 # 
 # ----------------------------------------------------------------------------
 # 
-#  Create Date:         Jul 01, 2016
-#  Design Name:         UltraZed PetaLinux BSP HW Platform
-#  Module Name:         make_uz_petalinux.tcl
-#  Project Name:        UltraZed PetaLinux BSP Generator
-#  Target Devices:      Xilinx Zynq UltraScale+ 3EG
-#  Hardware Boards:     UltraZed SOM
+#  Create Date:         Nov 13, 2017
+#  Design Name:         UltraZed-EV Factory Test Design Platform
+#  Module Name:         make_uz7ev_factest.tcl
+#  Project Name:        UltraZed-EV Factory Test Design Generator
+#  Target Devices:      Xilinx Zynq UltraScale+ 7EV
+#  Hardware Boards:     UltraZed-EV SOM
 # 
-#  Tool versions:       Xilinx Vivado 2016.2
+#  Tool versions:       Xilinx Vivado 2017.2
+#                       Xilinx Vivado 2017.3
 # 
-#  Description:         Build Script for UltraZed PetaLinux BSP HW Platform
+#  Description:         Build Script for UltraZed-EV OOB HW Platform
 # 
 #  Dependencies:        make.tcl
 #
-#  Revision:            Jul 01, 2016: 1.00 Initial version
-#                       Jan 05, 2017: 1.01 Added support for PCIe Carrier
-#                       Aug 25, 2017: 1.02 Updated for 2017.2 tools
-#                       Jan 30, 2018: 1.03 Added support for UltraZed-EV
-#                       Feb 01, 2018: 1.03 Updated for 2017.4 tools
+#  Revision:            Dec 21, 2017: 1.00 Initial version
 # 
 # ----------------------------------------------------------------------------
 
-# Build PetaLinux BSP HW Platform
-# for UltraZed 3EG SOM + IO Carrier
-#set argv [list board=UZ3EG_IOCC project=uz_petalinux sdk=yes close_project=yes version_override=yes dev_arch=zynqmp]
-#set argc [llength $argv]
-#source ./make.tcl -notrace
-
-# Build PetaLinux BSP HW Platform
-# for UltraZed 3EG SOM + PCIe Carrier
-#set argv [list board=UZ3EG_PCIEC project=uz_petalinux sdk=yes close_project=yes version_override=yes dev_arch=zynqmp]
-#set argc [llength $argv]
-#source ./make.tcl -notrace
-
-# Build PetaLinux BSP HW Platform (also used for OOB HW Platform)
-# for UltraZed 7EV SOM + EV Carrier
-set argv [list board=UZ7EV_EVCC project=uz_petalinux sdk=yes close_project=yes version_override=yes dev_arch=zynqmp]
+# Build FACTEST HW Platform
+# for UltraZed 7EV SOM + Carrier
+set argv [list board=UZ7EV_EVCC project=uz7ev_evcc_factest sdk=yes close_project=yes version_override=yes dev_arch=zynqmp]
 set argc [llength $argv]
 source ./make.tcl -notrace
 
