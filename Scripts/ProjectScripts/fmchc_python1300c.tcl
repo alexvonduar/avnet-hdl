@@ -1,23 +1,23 @@
 # ----------------------------------------------------------------------------
-#  
-#        ** **        **          **  ****      **  **********  ********** ® 
-#       **   **        **        **   ** **     **  **              ** 
-#      **     **        **      **    **  **    **  **              ** 
-#     **       **        **    **     **   **   **  *********       ** 
-#    **         **        **  **      **    **  **  **              ** 
-#   **           **        ****       **     ** **  **              ** 
-#  **  .........  **        **        **      ****  **********      ** 
-#     ........... 
-#                                     Reach Further™ 
-#  
+#
+#        ** **        **          **  ****      **  **********  ********** ®
+#       **   **        **        **   ** **     **  **              **
+#      **     **        **      **    **  **    **  **              **
+#     **       **        **    **     **   **   **  *********       **
+#    **         **        **  **      **    **  **  **              **
+#   **           **        ****       **     ** **  **              **
+#  **  .........  **        **        **      ****  **********      **
+#     ...........
+#                                     Reach Further™
+#
 # ----------------------------------------------------------------------------
-# 
+#
 #  This design is the property of Avnet.  Publication of this
 #  design is not authorized without written consent from Avnet.
-# 
+#
 #  Please direct any questions or issues to the MicroZed Community Forums:
 #      http://www.microzed.org
-# 
+#
 #  Disclaimer:
 #     Avnet, Inc. makes no warranty for the use of this code or design.
 #     This code is provided  "As Is". Avnet, Inc assumes no responsibility for
@@ -26,29 +26,29 @@
 #     disclaims any implied warranties of fitness for a particular purpose.
 #                      Copyright(c) 2014 Avnet, Inc.
 #                              All rights reserved.
-# 
+#
 # ----------------------------------------------------------------------------
-# 
+#
 #  Create Date:         June 16, 2015
-#  Design Name:         
-#  Module Name:         
-#  Project Name:        
-#  Target Devices:      
+#  Design Name:
+#  Module Name:
+#  Project Name:
+#  Target Devices:
 #  Hardware Boards:     FMC-HDMI-CAM + PYTHON-1300-C Camera
-# 
+#
 #  Tool versions:       Vivado 2016.4
-# 
+#
 #  Description:         Build Script for FMC-HDMI-CAM FMC module, and PYTHON-1300-C Camera Module
-# 
+#
 #  Dependencies:        To be called from a configured make script call
 #                       Calls support scripts, such as board configuration scripts
 #                          IP generation scripts or others
-# 
+#
 # ----------------------------------------------------------------------------
 
 proc validate_core_licenses { core_list ip_report_filename } {
    set valid_cores 0
-   set invalid_cores 0   
+   set invalid_cores 0
 
    puts ""
    puts "+------------------+------------------------------------+"
@@ -56,15 +56,15 @@ proc validate_core_licenses { core_list ip_report_filename } {
    puts "+------------------+------------------------------------+"
 
    foreach core $core_list {
-   
+
       # Format core name for display
       set core_name $core
       for {set j 0} {$j < [expr 16 - [string length $core]]} {incr j} {
          append core_name " "
       }
-      
+
       # Search for core license status in ip status report
-      set file [open $ip_report_filename r]   
+      set file [open $ip_report_filename r]
       set ip_status ""
       while {[gets $file line] >= 0} {
          if {[regexp $core $line]} {
@@ -74,7 +74,7 @@ proc validate_core_licenses { core_list ip_report_filename } {
       }
       close $file
       #puts "ip_status = ${ip_status}"
-   
+
       # Validate and display status of core license
       if {[regexp "Included" ${ip_status}]} {
          puts "| ${core_name} | VALID (Full License)               |"
@@ -90,7 +90,7 @@ proc validate_core_licenses { core_list ip_report_filename } {
          incr invalid_cores
       }
       puts "+------------------+------------------------------------+"
-      
+
    }
    return $valid_cores
 }
@@ -146,6 +146,10 @@ switch -nocase $board {
 			  set_property board_part em.avnet.com:picozed_7020_fmc2:part0:1.1 [current_project]
 			  add_files -fileset constrs_1 -norecurse ${projects_folder}/../pz7020_fmc2_fmchc_python1300c.xdc
               }
+   ZCU104 {
+			  set_property board_part xilinx.com:zcu104:part0:1.1 [current_project]
+			  add_files -fileset constrs_1 -norecurse ${projects_folder}/../zcu104_fmchc_python1300c.xdc
+              }
    default    {puts "Unsupported Board!"
                return -code ok}
 }
@@ -193,7 +197,7 @@ report_ip_status -file "video_ip_core_status.log"
 set core_list [list "v_cfa" "v_cresample" "v_osd" "v_rgb2ycrcb" "v_tc" ]
 set valid_cores [validate_core_licenses $core_list "video_ip_core_status.log"]
 if { $valid_cores < 5 } {
-   puts " 
+   puts "
 *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 *-                                                     -*
@@ -203,7 +207,7 @@ if { $valid_cores < 5 } {
 *-     video_ip_core_status_report.log                 -*
 *-                                                     -*
 *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*"	
+*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*"
    error "!! Detected missing license for video ip cores !!"
 }
 
@@ -233,6 +237,9 @@ switch -nocase $board {
    PZ7020_FMC2 {
               source ../../Scripts/ProjectScripts/fmchc_python1300c_bd.tcl
               }
+   ZCU104 {
+              source ../../Scripts/ProjectScripts/zcu104_fmchc_python1300c_bd.tcl
+              }
    default    {puts "Unsupported Board!"
                return -code ok}
 }
@@ -247,7 +254,7 @@ add_files -norecurse ${projects_folder}/${project}.srcs/sources_1/bd/${project}/
 #*- KEEP OUT, do not touch this section unless you know what you are doing! -*
 #*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 puts "***** Building Binary..."
-# add this to allow up+enter rebuild capability 
+# add this to allow up+enter rebuild capability
 cd $scripts_folder
 update_compile_order -fileset sources_1
 update_compile_order -fileset sim_1

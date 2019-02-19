@@ -7,13 +7,13 @@
 #        *======*
 #         *====*
 # ----------------------------------------------------------------------------
-# 
+#
 #  This design is the property of Avnet.  Publication of this
 #  design is not authorized without written consent from Avnet.
-# 
+#
 #  Please direct any questions or issues to the MicroZed Community Forums:
 #      http://www.microzed.org
-# 
+#
 #  Disclaimer:
 #     Avnet, Inc. makes no warranty for the use of this code or design.
 #     This code is provided  "As Is". Avnet, Inc assumes no responsibility for
@@ -22,24 +22,24 @@
 #     disclaims any implied warranties of fitness for a particular purpose.
 #                      Copyright(c) 2014 Avnet, Inc.
 #                              All rights reserved.
-# 
+#
 # ----------------------------------------------------------------------------
-# 
+#
 #  Create Date:         December 02, 2014
-#  Design Name:         
-#  Module Name:         
-#  Project Name:        
-#  Target Devices:      
-#  Hardware Boards:     
-# 
-#  Tool versions:       
+#  Design Name:
+#  Module Name:
+#  Project Name:
+#  Target Devices:
+#  Hardware Boards:
+#
+#  Tool versions:
 set required_version 2017.1
-# 
+#
 #  Description:         Build Script for sample project (fails build)
-# 
+#
 #  Dependencies:        Variable Configuration Scripts, Project Build Scripts,
 #                       Tagging Scripts
-# 
+#
 # ----------------------------------------------------------------------------
 
 set debuglevel 0
@@ -287,7 +287,7 @@ if {[string match -nocase "init" $tag]} {
    cd $repo_folder
    set modified_files [exec git ls-files -m]
    cd $scripts_folder
-   if {[llength $modified_files] > 0} { 
+   if {[llength $modified_files] > 0} {
       puts "Please commit all files before trying to TAG\nNot Tagging..."
       return -code ok
    }
@@ -323,6 +323,7 @@ switch -nocase $board {
    ZC702                      -
    ZC706                      -
    ZCU102                     -
+   ZCU104                     -
    ZEDBOARD                   -
    MINIZED                    -
    MITXZ7045                  -
@@ -357,7 +358,7 @@ if {[string match -nocase "no" $jtag]} {
       }
       unset curr_proj
    }
-   
+
    # attempt to build SDK portion
    if {[string match -nocase "yes" $sdk]} {
       puts "Attempting to Build SDK..."
@@ -372,7 +373,7 @@ if {[string match -nocase "no" $jtag]} {
       }
       cd ${scripts_folder}
    }
-   
+
    # run Tagging script
    if {[string match -nocase "yes" $tag]} {
       puts "Running Tag"
