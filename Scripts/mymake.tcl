@@ -25,7 +25,7 @@
 #
 # ----------------------------------------------------------------------------
 #
-#  Create Date:         December 02, 2014
+#  Create Date:         February 23, 2019
 #  Design Name:
 #  Module Name:
 #  Project Name:
@@ -33,7 +33,7 @@
 #  Hardware Boards:
 #
 #  Tool versions:
-set required_version 2017.1
+set required_version 2018.3
 #
 #  Description:         Build Script for sample project (fails build)
 #
@@ -55,7 +55,7 @@ set ok_to_tag_public "false"
 set sdk "no"
 set jtag "no"
 set dev_arch "zynq"
-set vivado_ver "2018_2"
+set vivado_ver "2018_3"
 
 # create GREP process
 # From: http://wiki.tcl.tk/9395
@@ -77,6 +77,7 @@ proc grep {pattern args} {
         }
     }
 }
+
 proc grep0 {prefix pattern handle} {
     set lnum 0
     while {[gets $handle line] >= 0} {

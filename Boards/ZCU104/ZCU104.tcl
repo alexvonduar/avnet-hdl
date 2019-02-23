@@ -44,7 +44,7 @@
 # ----------------------------------------------------------------------------
 
 proc avnet_create_project {project projects_folder scriptdir} {
-
+   puts "create preject $project in folder $projects_folder"
    create_project $project $projects_folder -part xczu7ev-ffvc1156-2-e -force
    # add selection for proper xdc based on needs
    # if IO carrier, then use that xdc

@@ -48,4 +48,4 @@
 # Build FMC-HDMI-CAM + PYTHON-1300-C Getting Started design for the zcu104
 set argv [list board=ZCU104 project=fmchc_python1300c sdk=yes version_override=yes]
 set argc [llength $argv]
-source ./make.tcl -notrace
+source ./mymake.tcl -notrace
