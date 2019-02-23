@@ -40,7 +40,7 @@
 #
 #  Description:         Build Script for FMC-HDMI-CAM + PYTHON-1300-C Getting Started design
 #
-#  Dependencies:        make.tcl
+#  Dependencies:        mymake.tcl
 #
 # ----------------------------------------------------------------------------
 

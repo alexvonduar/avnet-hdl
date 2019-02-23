@@ -56,17 +56,15 @@ proc avnet_add_user_io_preset {project projects_folder scriptdir} {
 
    # this uses board automation for the ZCU104 development board.
    create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_0
-   apply_board_connection -board_interface "dip_switches_8bits" -ip_intf "axi_gpio_0/GPIO" -diagram $project 
+   apply_board_connection -board_interface "dip_switch_4bits" -ip_intf "axi_gpio_0/GPIO" -diagram $project 
+   apply_board_connection -board_interface "led_4bits" -ip_intf "axi_gpio_0/GPIO2" -diagram $project
    create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_1
-   apply_board_connection -board_interface "led_8bits" -ip_intf "axi_gpio_1/GPIO" -diagram $project 
-   create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_2
-   apply_board_connection -board_interface "push_buttons_5bits" -ip_intf "axi_gpio_2/GPIO" -diagram $project
+   apply_board_connection -board_interface "push_button_4bits" -ip_intf "axi_gpio_1/GPIO" -diagram $project 
+
    apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config {Master "/zynq_ultra_ps_e_0/M_AXI_HPM0_LPD" Clk "Auto" }  [get_bd_intf_pins axi_gpio_0/S_AXI]
-   # </axi_gpio_0/S_AXI/Reg> is being mapped into </zynq_ultra_ps_e_0/Data> at <0x80000000 [ 64K ]>
+   # </axi_gpio_0/S_AXI/Reg> is being mapped into </zynq_ultra_ps_e_0/Data> at <0x80000000 [ 4K ]>
    apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config {Master "/zynq_ultra_ps_e_0/M_AXI_HPM0_LPD" Clk "Auto" }  [get_bd_intf_pins axi_gpio_1/S_AXI]
-   # </axi_gpio_1/S_AXI/Reg> is being mapped into </zynq_ultra_ps_e_0/Data> at <0x80010000 [ 64K ]>
-   apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config {Master "/zynq_ultra_ps_e_0/M_AXI_HPM0_LPD" Clk "Auto" }  [get_bd_intf_pins axi_gpio_2/S_AXI]
-   # </axi_gpio_2/S_AXI/Reg> is being mapped into </zynq_ultra_ps_e_0/Data> at <0x80020000 [ 64K ]>
+   # </axi_gpio_1/S_AXI/Reg> is being mapped into </zynq_ultra_ps_e_0/Data> at <0x80001000 [ 4K ]>
    
 }
 
@@ -90,10 +88,15 @@ proc avnet_add_ps_preset {project projects_folder scriptdir} {
    set_property -dict [list CONFIG.PSU__TTC1__PERIPHERAL__ENABLE {1} CONFIG.PSU__TTC1__PERIPHERAL__IO {EMIO}] [get_bd_cells zynq_ultra_ps_e_0]
    set_property -dict [list CONFIG.PSU__TTC2__PERIPHERAL__ENABLE {1} CONFIG.PSU__TTC2__PERIPHERAL__IO {EMIO}] [get_bd_cells zynq_ultra_ps_e_0]
    set_property -dict [list CONFIG.PSU__TTC3__PERIPHERAL__ENABLE {1} CONFIG.PSU__TTC3__PERIPHERAL__IO {EMIO}] [get_bd_cells zynq_ultra_ps_e_0]
+   }
+   set_property -dict [list CONFIG.PSU__USE__M_AXI_GP1 {0}] [get_bd_cells zynq_ultra_ps_e_0]
+   #set_property -dict [list CONFIG.PSU__USE__M_AXI_GP2 {1}] [get_bd_cells zynq_ultra_ps_e_0]
+   set_property -dict [list CONFIG.PSU__USE__S_AXI_GP2 {1}] [get_bd_cells zynq_ultra_ps_e_0]
 }
 
 proc avnet_add_ps {project projects_folder scriptdir} {
-    avnet_add_ps_preset $project $projects_folder $scriptdir
+   avnet_add_ps_preset $project $projects_folder $scriptdir
+   #avnet_add_user_io_preset $project $projects_folder $scriptdir
 }
 
 proc avnet_add_ps_displayport {project projects_folder scriptdir} {
