@@ -73,6 +73,7 @@ createbsp -name ${bsp_name} -proc ps7_cortexa9_0 -hwproject ${hw_name} -os stand
 # add libraries for FSBL
 setlib -bsp ${bsp_name} -lib xilffs
 setlib -bsp ${bsp_name} -lib xilrsa
+setlib -bsp ${bsp_name} -lib xilpm
 # add libraries for APP
 setlib -bsp ${bsp_name} -lib fmc_iic_sw
 setlib -bsp ${bsp_name} -lib fmc_hdmi_cam_sw
@@ -83,7 +84,7 @@ projects -build -type bsp -name ${bsp_name}
 
 # Create APP
 puts "\n#\n#\n# Creating ${app_name} ...\n#\n#\n"
-createapp -name ${app_name} -hwproject ${hw_name} -proc ps7_cortexa9_0 -os standalone -lang C -app {Empty Application} -bsp ${bsp_name} 
+createapp -name ${app_name} -hwproject ${hw_name} -proc ps7_cortexa53_0 -os standalone -lang C -app {Empty Application} -bsp ${bsp_name} 
 
 # APP : copy sources to empty application
 importsources -name ${app_name} -path ../software/${app_name}/src
@@ -94,8 +95,8 @@ projects -build -type app -name ${app_name}
 
 # Create Zynq FSBL application
 puts "\n#\n#\n# Creating zynq_fsbl ...\n#\n#\n"
-#createapp -name zynq_fsbl_app -hwproject ${hw_name} -proc ps7_cortexa9_0 -os standalone -lang C -app {Zynq FSBL} -bsp zynq_fsbl_bsp
-createapp -name zynq_fsbl_app -hwproject ${hw_name} -proc ps7_cortexa9_0 -os standalone -lang C -app {Zynq FSBL} -bsp ${bsp_name}
+#createapp -name zynq_fsbl_app -hwproject ${hw_name} -proc ps7_cortexa53_0 -os standalone -lang C -app {Zynq FSBL} -bsp zynq_fsbl_bsp
+createapp -name zynq_fsbl_app -hwproject ${hw_name} -proc ps7_cortexa53_0 -os standalone -lang C -app {Zynq FSBL} -bsp ${bsp_name}
 
 # Set the build type to release
 #configapp -app zynq_fsbl_app build-config release
