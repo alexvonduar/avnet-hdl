@@ -39,7 +39,7 @@ use xpm.vcomponents.all;
 entity pulse_regen is
   generic
   (
-    C_FAMILY                  : string               := "zynq"
+    C_FAMILY                  : string               := "zynquplus"
   );
   port
   (

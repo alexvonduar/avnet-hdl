@@ -119,7 +119,7 @@ entity onsemi_vita_cam_core is
     C_IO_VITA_DATA_WIDTH           : integer := 4;
     C_INCLUDE_BLC                  : integer := 0;
     C_INCLUDE_MONITOR              : integer := 0;
-    C_FAMILY                       : string  := "zynq"
+    C_FAMILY                       : string  := "zynquplus"
   );
   Port
   (
@@ -1700,7 +1700,7 @@ end generate DIRECT_OUTPUT_GEN;
 
    end generate S6_GEN;
 
-   V6_GEN : if (C_FAMILY = "virtex6" or C_FAMILY = "kintex7" or C_FAMILY = "zynq" or C_FAMILY = "artix7" or C_FAMILY = "virtex7") generate
+   V6_GEN : if (C_FAMILY = "virtex6" or C_FAMILY = "kintex7" or C_FAMILY = "zynq" or C_FAMILY = "zynquplus" or C_FAMILY = "artix7" or C_FAMILY = "virtex7") generate
 
       ODDR_vita_clk_pll_o : ODDR
          generic map (

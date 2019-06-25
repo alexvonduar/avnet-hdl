@@ -575,7 +575,7 @@ gen_oserdes_multiplier_DCM: if (USE_HS_EXT_CLK_OUT = TRUE or USE_HS_EXT_CLK_IN =
 
   end generate; --gen_oserdes_multiplier_v5 : if (C_FAMILY = "virtex5" ) generate
 
-  gen_oserdes_multiplier_v6 : if (C_FAMILY = "virtex6" or C_FAMILY = "kintex7" or C_FAMILY = "zynq" or C_FAMILY = "artix7" or C_FAMILY = "virtex7") generate
+  gen_oserdes_multiplier_v6 : if (C_FAMILY = "virtex6" or C_FAMILY = "kintex7" or C_FAMILY = "zynq" or C_FAMILY = "zynquplus" or C_FAMILY = "artix7" or C_FAMILY = "virtex7") generate
 
          mmcm_adv_inst : MMCM_ADV
            generic map

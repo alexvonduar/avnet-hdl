@@ -206,8 +206,8 @@ signal SLAVE_DATA           : std_logic_vector(7 downto 0);
 
 signal ISERDES_DATA         : std_logic_vector(DATAWIDTH-1 downto 0);      
    
-signal DI                   : std_logic_vector(15 downto 0);    
-signal DO                   : std_logic_vector(15 downto 0);    
+signal DI                   : std_logic_vector(31 downto 0);    
+signal DO                   : std_logic_vector(31 downto 0);    
   
 signal CLKb_inv             : std_logic;
 signal CLKDIVb_inv          : std_logic;
@@ -316,7 +316,7 @@ IODELAYE1_inst : IODELAYE1
 
 end generate IODELAY_V6_GEN;
 
-IDELAY_K7_GEN : if (C_FAMILY = "kintex7" or C_FAMILY = "zynq" or C_FAMILY = "artix7" or C_FAMILY = "virtex7") generate
+IDELAY_K7_GEN : if (C_FAMILY = "kintex7" or C_FAMILY = "zynq" or C_FAMILY = "zynquplus" or C_FAMILY = "artix7" or C_FAMILY = "virtex7") generate
 
 -- iodelay
 IDELAYE2_inst : IDELAYE2
@@ -514,6 +514,33 @@ MASTER_ISERDES_K7_GEN : if (C_FAMILY = "kintex7" or C_FAMILY = "zynq" or C_FAMIL
                 );
 end generate MASTER_ISERDES_K7_GEN;
 
+MASTER_ISERDES_Ultra_GEN : if (C_FAMILY = "zynquplus") generate
+   Master_iserdes : ISERDESE3
+   generic map(
+            DATA_WIDTH => DATAWIDTH,         -- Parallel data width (4,8)   
+            FIFO_ENABLE => "FALSE",          -- Enables the use of the FIFO   
+            FIFO_SYNC_MODE => "FALSE",       -- Always set to FALSE. TRUE is reserved for later use.   
+            IS_CLK_B_INVERTED => '0',        -- Optional inversion for CLK_B   
+            IS_CLK_INVERTED => '0',          -- Optional inversion for CLK   
+            IS_RST_INVERTED => '0',          -- Optional inversion for RST   
+            SIM_DEVICE => "ULTRASCALE_PLUS"  -- Set the device version (ULTRASCALE, ULTRASCALE_PLUS,
+                                             -- ULTRASCALE_PLUS_ES1, ULTRASCALE_PLUS_ES2)
+            )
+      port map (
+                FIFO_EMPTY => open,           -- 1-bit output: FIFO empty flag   
+                --INTERNAL_DIVCLK => INTERNAL_DIVCLK, -- 1-bit output: Internally divided down clock used when FIFO is
+                --                                           -- disabled (do not connect)   
+                Q => MASTER_DATA,                             -- 8-bit registered output   
+                CLK => CLK,                         -- 1-bit input: High-speed clock   
+                CLKDIV => CLKDIV,                   -- 1-bit input: Divided Clock   
+                CLK_B => CLKb_inv,                     -- 1-bit input: Inversion of High-speed clock CLK   
+                D => '0',                             -- 1-bit input: Serial Data Input   
+                FIFO_RD_CLK => '0',         -- 1-bit input: FIFO read clock   
+                FIFO_RD_EN => '0',           -- 1-bit input: Enables reading the FIFO when asserted   
+                RST => IODELAY_ISERDES_RESET                          -- 1-bit input: Asynchronous Reset
+                );
+end generate MASTER_ISERDES_Ultra_GEN;
+
 -- dual serdes modules needed for widths of 8 and 10 in DDR mode, and 7 and 8 in SDR mode
 
 Slave_iserdes_gen: if (DATAWIDTH >6) generate
@@ -554,7 +581,7 @@ SLAVE_ISERDES_V5_V6_REORDER : if (C_FAMILY = "virtex5" or C_FAMILY = "virtex6") 
 
 end generate SLAVE_ISERDES_V5_V6_REORDER;
 
-SLAVE_ISERDES_K7_REORDER : if (C_FAMILY = "kintex7" or C_FAMILY = "zynq" or C_FAMILY = "artix7" or C_FAMILY = "virtex7") generate
+SLAVE_ISERDES_K7_REORDER : if (C_FAMILY = "kintex7" or C_FAMILY = "zynq" or C_FAMILY = "zynquplus" or C_FAMILY = "artix7" or C_FAMILY = "virtex7") generate
         
     Normal_Output: if (INVERT_OUTPUT=FALSE) generate
         Normal_order: if (INVERSE_BITORDER=FALSE) generate                
@@ -739,6 +766,32 @@ SLAVE_ISERDES_K7_GEN : if (C_FAMILY = "kintex7" or C_FAMILY = "zynq" or C_FAMILY
                 );
 end generate SLAVE_ISERDES_K7_GEN;				
 
+SLAVE_ISERDES_Ultra_GEN : if (C_FAMILY = "zynquplus") generate  
+   Slave_iserdes : ISERDESE3
+   generic map( 
+            DATA_WIDTH => DATAWIDTH,                 -- Parallel data width (4,8)   
+            FIFO_ENABLE => "FALSE",          -- Enables the use of the FIFO   
+            FIFO_SYNC_MODE => "FALSE",       -- Always set to FALSE. TRUE is reserved for later use.   
+            IS_CLK_B_INVERTED => '0',        -- Optional inversion for CLK_B   
+            IS_CLK_INVERTED => '0',          -- Optional inversion for CLK   
+            IS_RST_INVERTED => '0',          -- Optional inversion for RST   
+            SIM_DEVICE => "ULTRASCALE_PLUS"  -- Set the device version (ULTRASCALE, ULTRASCALE_PLUS,          
+            )
+      port map (
+                FIFO_EMPTY => open,           -- 1-bit output: FIFO empty flag   
+                --INTERNAL_DIVCLK => INTERNAL_DIVCLK, -- 1-bit output: Internally divided down clock used when FIFO is
+                                                           -- disabled (do not connect)   
+                Q => SLAVE_DATA,                             -- 8-bit registered output   
+                CLK => CLK,                         -- 1-bit input: High-speed clock   
+                CLKDIV => CLKDIV,                   -- 1-bit input: Divided Clock   
+                CLK_B => CLKb_inv,                     -- 1-bit input: Inversion of High-speed clock CLK   
+                D => '0',                             -- 1-bit input: Serial Data Input   
+                FIFO_RD_CLK => '0',         -- 1-bit input: FIFO read clock   
+                FIFO_RD_EN => '0',           -- 1-bit input: Enables reading the FIFO when asserted   
+                RST => IODELAY_ISERDES_RESET                          -- 1-bit input: Asynchronous Reset
+                );
+end generate SLAVE_ISERDES_Ultra_GEN;				
+
 end generate;                
 
 Noslave_iserdes_gen: if (DATAWIDTH <= 6) generate
@@ -778,6 +831,7 @@ ISERDES_DATAOUT <= ISERDES_DATA;
 fifogen: if (USE_FIFO = TRUE) generate
     blockramgen: if(USE_BLOCKRAMFIFO = TRUE) generate
         
+        fifo18gen: if (C_FAMILY = "kintex7" or C_FAMILY = "zynq" or C_FAMILY = "artix7" or C_FAMILY = "virtex7") generate
         FIFO18_inst : FIFO18
         generic map (
             ALMOST_FULL_OFFSET      => X"080"   , -- Sets almost full threshold
@@ -794,7 +848,7 @@ fifogen: if (USE_FIFO = TRUE) generate
         port map (
             ALMOSTEMPTY             => open                 , -- 1-bit almost empty output flag
             ALMOSTFULL              => open                 , -- 1-bit almost full output flag
-            DO                      => DO                   , -- 16-bit data output
+            DO                      => DO(15 downto 0)      , -- 16-bit data output
             DOP                     => open                 , -- 2-bit parity data output
             EMPTY                   => FIFO_EMPTY           , -- 1-bit empty output flag
             FULL                    => FIFO_FULL            , -- 1-bit full output flag
@@ -802,7 +856,7 @@ fifogen: if (USE_FIFO = TRUE) generate
             RDERR                   => open                 , -- 1-bit read error output
             WRCOUNT                 => open                 , -- 12-bit write count output
             WRERR                   => open                 , -- 1-bit write error
-            DI                      => DI                   , -- 16-bit data input
+            DI                      => DI(15 downto 0)      , -- 16-bit data input
             DIP                     => zeros(1 downto 0)    , -- 2-bit parity input
             RDCLK                   => CLOCK                , -- 1-bit read clock input
             RDEN                    => FIFO_RDEN            , -- 1-bit read enable input
@@ -810,9 +864,81 @@ fifogen: if (USE_FIFO = TRUE) generate
             WRCLK                   => CLKDIV               , -- 1-bit write clock input
             WREN                    => FIFO_WREN              -- 1-bit write enable input
         );           
-    -- End of FIFO18_inst instantiation
+        -- End of FIFO18_inst instantiation
+        end generate fifo18gen;
 
-    DI(15 downto DATAWIDTH) <= (others => '0');
+        fifo18ultragen: if (C_FAMILY = "zynquplus") generate
+        FIFO18_inst : FIFO18E2
+        generic map (
+            CASCADE_ORDER => "NONE",            -- FIRST, LAST, MIDDLE, NONE, PARALLEL   
+            CLOCK_DOMAINS => "INDEPENDENT",     -- COMMON, INDEPENDENT   
+            FIRST_WORD_FALL_THROUGH => "FALSE", -- FALSE, TRUE   
+            INIT => X"000000000",               -- Initial values on output port   
+            PROG_EMPTY_THRESH => 128,           -- Programmable Empty Threshold   
+            PROG_FULL_THRESH => 128,            -- Programmable Full Threshold   
+            -- Programmable Inversion Attributes: Specifies the use of the built-in programmable inversion  
+            IS_RDCLK_INVERTED => '0',           -- Optional inversion for RDCLK   
+            IS_RDEN_INVERTED => '0',            -- Optional inversion for RDEN   
+            IS_RSTREG_INVERTED => '0',          -- Optional inversion for RSTREG   
+            IS_RST_INVERTED => '0',             -- Optional inversion for RST   
+            IS_WRCLK_INVERTED => '0',           -- Optional inversion for WRCLK   
+            IS_WREN_INVERTED => '0',            -- Optional inversion for WREN   
+            RDCOUNT_TYPE => "RAW_PNTR",         -- EXTENDED_DATACOUNT, RAW_PNTR, SIMPLE_DATACOUNT, SYNC_PNTR   
+            READ_WIDTH => 18,                    -- 18-9   
+            REGISTER_MODE => "UNREGISTERED",    -- DO_PIPELINED, REGISTERED, UNREGISTERED   
+            RSTREG_PRIORITY => "RSTREG",        -- REGCE, RSTREG   
+            SLEEP_ASYNC => "FALSE",             -- FALSE, TRUE   
+            SRVAL => X"000000000",              -- SET/reset value of the FIFO outputs   
+            WRCOUNT_TYPE => "RAW_PNTR",         -- EXTENDED_DATACOUNT, RAW_PNTR, SIMPLE_DATACOUNT, SYNC_PNTR   
+            WRITE_WIDTH => 18                    -- 18-9
+            ) 
+                                                -- Simulation: "SAFE" vs "FAST", see "Synthesis and Simulation
+                                                -- Design Guide" for details
+        port map (
+            -- Cascade Signals outputs: Multi-FIFO cascade signals   
+            CASDOUT => open,             -- 32-bit output: Data cascade output bus   
+            CASDOUTP => open,           -- 4-bit output: Parity data cascade output bus
+            CASNXTEMPTY => open,     -- 1-bit output: Cascade next empty   
+            CASPRVRDEN => open,       -- 1-bit output: Cascade previous read enable
+            -- Read Data outputs: Read output data   
+            DOUT => DO,                   -- 32-bit output: FIFO data output bus   
+            DOUTP => open,                 -- 4-bit output: FIFO parity output bus.   
+            -- Status outputs: Flags and other FIFO status outputs   
+            EMPTY => FIFO_EMPTY,                 -- 1-bit output: Empty   
+            FULL => FIFO_FULL,                   -- 1-bit output: Full   
+            PROGEMPTY => open,         -- 1-bit output: Programmable empty   
+            PROGFULL => open,           -- 1-bit output: Programmable full   
+            RDCOUNT => open,             -- 13-bit output: Read count   
+            RDERR => open,                 -- 1-bit output: Read error   
+            RDRSTBUSY => open,         -- 1-bit output: Reset busy (sync to RDCLK)   
+            WRCOUNT => open,             -- 13-bit output: Write count   
+            WRERR => open,                 -- 1-bit output: Write Error   
+            WRRSTBUSY => open,         -- 1-bit output: Reset busy (sync to WRCLK)   
+            -- Cascade Signals inputs: Multi-FIFO cascade signals   
+            CASDIN => zeros(31 downto 0),               -- 32-bit input: Data cascade input bus   
+            CASDINP => zeros(3 downto 0),             -- 4-bit input: Parity data cascade input bus   
+            CASDOMUX => '0',           -- 1-bit input: Cascade MUX select   
+            CASDOMUXEN => '0',       -- 1-bit input: Enable for cascade MUX select   
+            CASNXTRDEN => '0',       -- 1-bit input: Cascade next read enable   
+            CASOREGIMUX => '0',     -- 1-bit input: Cascade output MUX select   
+            CASOREGIMUXEN => '0', -- 1-bit input: Cascade output MUX select enable   
+            CASPRVEMPTY => '0',     -- 1-bit input: Cascade previous empty   
+            -- Read Control Signals inputs: Read clock, enable and reset input signals   
+            RDCLK => CLOCK,                 -- 1-bit input: Read clock   
+            RDEN => FIFO_RDEN,                   -- 1-bit input: Read enable   
+            REGCE => '0',                 -- 1-bit input: Output register clock enable   
+            RSTREG => '0',               -- 1-bit input: Output register reset   
+            SLEEP => '0',                 -- 1-bit input: Sleep Mode   -- Write Control Signals inputs: Write clock and enable input signals   
+            RST => FIFO_RESET,                     -- 1-bit input: Reset   
+            WRCLK => CLKDIV,                 -- 1-bit input: Write clock   
+            WREN => FIFO_WREN,                   -- 1-bit input: Write enable   -- Write Data inputs: Write input data   
+            DIN => DI,                     -- 32-bit input: FIFO data input bus   
+            DINP => zeros(3 downto 0)                    -- 4-bit input: FIFO parity input bus
+        );           
+        -- End of FIFO18_inst instantiation
+        end generate fifo18ultragen;
+
+    DI(31 downto DATAWIDTH) <= (others => '0');
     DI(DATAWIDTH-1 downto 0) <= ISERDES_DATA;                                         
     FIFO_DATAOUT <= DO(DATAWIDTH-1 downto 0);
     end generate;    
@@ -863,7 +989,7 @@ fifogen: if (USE_FIFO = TRUE) generate
                  );
          end generate;
          
-      DI(15 downto DATAWIDTH) <= (others => '0');
+      DI(31 downto DATAWIDTH) <= (others => '0');
       DI(DATAWIDTH-1 downto 0) <= ISERDES_DATA;                                         
      
     end generate;             
