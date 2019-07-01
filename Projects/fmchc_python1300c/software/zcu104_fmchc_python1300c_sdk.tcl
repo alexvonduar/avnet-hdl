@@ -53,41 +53,61 @@
 #!/usr/bin/tclsh
 set project  "fmchc_python1300c"
 set hw_name  "fmchc_python1300c_hw"
-set bsp_name "fmchc_python1300c_bsp"
+set r5_bsp_name "fmchc_python1300c_r5_bsp"
+set a53_bsp_name "fmchc_python1300c_a53_bsp"
 set app_name "fmchc_python1300c_app"
 
 # Set workspace and import hardware platform
 setws ${project}.sdk
 
 puts "\n#\n#\n# Adding local user repository ...\n#\n#\n"
-repo -set ../software/sw_repository
+repo -set ../../../avnet/Projects/${project}/software/sw_repository
 
 puts "\n#\n#\n# Importing hardware definition ${hw_name} from impl_1 folder ...\n#\n#\n"
 file copy -force ${project}.runs/impl_1/${project}_wrapper.sysdef ${project}.sdk/${hw_name}.hdf
-puts "\n#\n#\n# Create hardware definition project ...\n#\n#\n"
-sdk createhw -name ${hw_name} -hwspec ${project}.sdk/${hw_name}.hdf
+if {[file exists ${project}.sdk/${project}_hw/system.hdf]} {
+    puts "\n#\n#\n# Open hardware definition project ...\n#\n#\n"
+    openhw ${hw_name}
+} else {
+    puts "\n#\n#\n# Create hardware definition project ...\n#\n#\n"
+    sdk createhw -name ${hw_name} -hwspec ${project}.sdk/${hw_name}.hdf
+}
 
 # Generate BSP
-puts "\n#\n#\n# Creating ${bsp_name} ...\n#\n#\n"
-createbsp -name ${bsp_name} -proc ps7_cortexa9_0 -hwproject ${hw_name} -os standalone
+puts "\n#\n#\n# Creating ${r5_bsp_name} ...\n#\n#\n"
+createbsp -name ${r5_bsp_name} -proc psu_cortexr5_0 -hwproject ${hw_name} -os standalone
 # add libraries for FSBL
-setlib -bsp ${bsp_name} -lib xilffs
-setlib -bsp ${bsp_name} -lib xilrsa
-setlib -bsp ${bsp_name} -lib xilpm
+setlib -bsp ${r5_bsp_name} -lib xilffs
+setlib -bsp ${r5_bsp_name} -lib xilsecure
+setlib -bsp ${r5_bsp_name} -lib xilpm
 # add libraries for APP
-setlib -bsp ${bsp_name} -lib fmc_iic_sw
-setlib -bsp ${bsp_name} -lib fmc_hdmi_cam_sw
-setlib -bsp ${bsp_name} -lib onsemi_python_sw
+#setlib -bsp ${r5_bsp_name} -lib fmc_iic_sw
+#setlib -bsp ${r5_bsp_name} -lib fmc_hdmi_cam_sw
+#setlib -bsp ${r5_bsp_name} -lib onsemi_python_sw
 # regen and build
-regenbsp -hw ${hw_name} -bsp ${bsp_name}
-projects -build -type bsp -name ${bsp_name}
+regenbsp -hw ${hw_name} -bsp ${r5_bsp_name}
+projects -build -type bsp -name ${r5_bsp_name}
+
+puts "\n#\n#\n# Creating ${a53_bsp_name} ...\n#\n#\n"
+createbsp -name ${a53_bsp_name} -proc psu_cortexa53_0 -hwproject ${hw_name} -os standalone
+# add libraries for FSBL
+setlib -bsp ${a53_bsp_name} -lib xilffs
+setlib -bsp ${a53_bsp_name} -lib xilsecure
+setlib -bsp ${a53_bsp_name} -lib xilpm
+# add libraries for APP
+setlib -bsp ${a53_bsp_name} -lib fmc_iic_sw
+setlib -bsp ${a53_bsp_name} -lib fmc_hdmi_cam_sw
+setlib -bsp ${a53_bsp_name} -lib onsemi_python_sw
+# regen and build
+regenbsp -hw ${hw_name} -bsp ${a53_bsp_name}
+projects -build -type bsp -name ${a53_bsp_name}
 
 # Create APP
 puts "\n#\n#\n# Creating ${app_name} ...\n#\n#\n"
-createapp -name ${app_name} -hwproject ${hw_name} -proc ps7_cortexa53_0 -os standalone -lang C -app {Empty Application} -bsp ${bsp_name} 
+createapp -name ${app_name} -hwproject ${hw_name} -proc psu_cortexa53_0 -os standalone -lang C -app {Empty Application} -bsp ${a53_bsp_name} 
 
 # APP : copy sources to empty application
-importsources -name ${app_name} -path ../software/${app_name}/src
+importsources -name ${app_name} -path ../../../avnet/Projects/${project}/software/${app_name}/src
 
 # build APP
 puts "\n#\n#\n# Build ${app_name} ...\n#\n#\n"
@@ -96,7 +116,7 @@ projects -build -type app -name ${app_name}
 # Create Zynq FSBL application
 puts "\n#\n#\n# Creating zynq_fsbl ...\n#\n#\n"
 #createapp -name zynq_fsbl_app -hwproject ${hw_name} -proc ps7_cortexa53_0 -os standalone -lang C -app {Zynq FSBL} -bsp zynq_fsbl_bsp
-createapp -name zynq_fsbl_app -hwproject ${hw_name} -proc ps7_cortexa53_0 -os standalone -lang C -app {Zynq FSBL} -bsp ${bsp_name}
+createapp -name zynq_fsbl_app -hwproject ${hw_name} -proc psu_cortexr5_0 -os standalone -lang C -app {Zynq MP FSBL} -bsp ${r5_bsp_name}
 
 # Set the build type to release
 #configapp -app zynq_fsbl_app build-config release

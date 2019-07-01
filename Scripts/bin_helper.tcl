@@ -136,7 +136,7 @@ while {1} {
 #   for {set y 0} {$y< $dot_count} {incr y} {
 #      puts -nonewline "."
 #   }
-#   puts "."
-#   # wait 1 second to check
-#   after 1000
+   puts -nonewline "."
+   # wait 1 second to check
+   after 1000
 }
