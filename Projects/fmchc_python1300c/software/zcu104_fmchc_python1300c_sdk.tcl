@@ -57,6 +57,8 @@ set r5_bsp_name "fmchc_python1300c_r5_bsp"
 set a53_bsp_name "fmchc_python1300c_a53_bsp"
 set app_name "fmchc_python1300c_app"
 set fsbl_name "zynq_fsbl_app"
+# Release build or Debug build
+set build_type "Debug"
 
 # Set workspace and import hardware platform
 setws ${project}.sdk
@@ -125,6 +127,11 @@ createapp -name ${app_name} -hwproject ${hw_name} -proc psu_cortexa53_0 -os stan
 # APP : copy sources to empty application
 importsources -name ${app_name} -path ../../../avnet/Projects/${project}/software/${app_name}/src
 
+if {[string match -nocase "Release"]} {
+   # Set the build type to release
+   configapp -app ${app_name} build-config release
+}
+
 # build APP
 puts "\n#\n#\n# Build ${app_name} ...\n#\n#\n"
 projects -build -type app -name ${app_name}
@@ -148,8 +155,10 @@ puts "[pwd]"
 exec >@stdout 2>@stderr patch -p1 < ../../../../../../scripts/0001-disable-NAND-QSPI-and-Secure-boot-to-save-fsbl-size.patch
 cd ${current}
 
-# Set the build type to release
-configapp -app ${fsbl_name} build-config release
+if {[string match -nocase "Release"]} {
+   # Set the build type to release
+   configapp -app ${fsbl_name} build-config release
+}
 
 # Build FSBL application
 puts "\n#\n#\n Building zynq_fsbl ...\n#\n#\n"
