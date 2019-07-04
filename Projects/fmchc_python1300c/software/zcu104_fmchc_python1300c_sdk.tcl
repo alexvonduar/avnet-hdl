@@ -56,6 +56,7 @@ set hw_name  "fmchc_python1300c_hw"
 set r5_bsp_name "fmchc_python1300c_r5_bsp"
 set a53_bsp_name "fmchc_python1300c_a53_bsp"
 set app_name "fmchc_python1300c_app"
+set fsbl_name "zynq_fsbl_app"
 
 # Set workspace and import hardware platform
 setws ${project}.sdk
@@ -75,6 +76,11 @@ if {[file exists ${project}.sdk/${project}_hw/system.hdf]} {
 
 # Generate BSP
 puts "\n#\n#\n# Creating ${r5_bsp_name} ...\n#\n#\n"
+if {[catch {deleteprojects -name ${r5_bsp_name}} errmsg]} {
+   puts "ErrorMsg: $errmsg"
+   puts "ErrorCode: $errorCode"
+   puts "ErrorInfo:\n$errorInfo\n"
+}
 createbsp -name ${r5_bsp_name} -proc psu_cortexr5_0 -hwproject ${hw_name} -os standalone
 # add libraries for FSBL
 setlib -bsp ${r5_bsp_name} -lib xilffs
@@ -89,6 +95,11 @@ regenbsp -hw ${hw_name} -bsp ${r5_bsp_name}
 projects -build -type bsp -name ${r5_bsp_name}
 
 puts "\n#\n#\n# Creating ${a53_bsp_name} ...\n#\n#\n"
+if {[catch {deleteprojects -name ${a53_bsp_name}} errmsg]} {
+   puts "ErrorMsg: $errmsg"
+   puts "ErrorCode: $errorCode"
+   puts "ErrorInfo:\n$errorInfo\n"
+}
 createbsp -name ${a53_bsp_name} -proc psu_cortexa53_0 -hwproject ${hw_name} -os standalone
 # add libraries for FSBL
 setlib -bsp ${a53_bsp_name} -lib xilffs
@@ -104,6 +115,11 @@ projects -build -type bsp -name ${a53_bsp_name}
 
 # Create APP
 puts "\n#\n#\n# Creating ${app_name} ...\n#\n#\n"
+if {[catch {deleteprojects -name ${app_name}} errmsg]} {
+   puts "ErrorMsg: $errmsg"
+   puts "ErrorCode: $errorCode"
+   puts "ErrorInfo:\n$errorInfo\n"
+}
 createapp -name ${app_name} -hwproject ${hw_name} -proc psu_cortexa53_0 -os standalone -lang C -app {Empty Application} -bsp ${a53_bsp_name} 
 
 # APP : copy sources to empty application
@@ -114,17 +130,31 @@ puts "\n#\n#\n# Build ${app_name} ...\n#\n#\n"
 projects -build -type app -name ${app_name}
 
 # Create Zynq FSBL application
-puts "\n#\n#\n# Creating zynq_fsbl ...\n#\n#\n"
+puts "\n#\n#\n# Creating FSBL ...\n#\n#\n"
+if {[catch {deleteprojects -name ${fsbl_name}} errmsg]} {
+   puts "ErrorMsg: $errmsg"
+   puts "ErrorCode: $errorCode"
+   puts "ErrorInfo:\n$errorInfo\n"
+}
 #createapp -name zynq_fsbl_app -hwproject ${hw_name} -proc ps7_cortexa53_0 -os standalone -lang C -app {Zynq FSBL} -bsp zynq_fsbl_bsp
-createapp -name zynq_fsbl_app -hwproject ${hw_name} -proc psu_cortexr5_0 -os standalone -lang C -app {Zynq MP FSBL} -bsp ${r5_bsp_name}
+createapp -name ${fsbl_name} -hwproject ${hw_name} -proc psu_cortexr5_0 -os standalone -lang C -app {Zynq MP FSBL} -bsp ${r5_bsp_name}
+
+# Patch FSBL application
+# disable NAND/QSPI/Secure Boot to save FSBL size
+set current [pwd]
+puts "${current}"
+cd ${project}.sdk/${fsbl_name}/src
+puts "[pwd]"
+exec >@stdout 2>@stderr patch -p1 < ../../../../../../scripts/0001-disable-NAND-QSPI-and-Secure-boot-to-save-fsbl-size.patch
+cd ${current}
 
 # Set the build type to release
-#configapp -app zynq_fsbl_app build-config release
+configapp -app ${fsbl_name} build-config release
 
 # Build FSBL application
 puts "\n#\n#\n Building zynq_fsbl ...\n#\n#\n"
-#projects -build -type bsp -name zynq_fsbl_bsp
-projects -build -type app -name zynq_fsbl_app
+#projects -build -type bsp -name ${fsbl_name}
+projects -build -type app -name ${fsbl_name}
 
 # done
 exit
