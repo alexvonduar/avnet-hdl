@@ -41,14 +41,32 @@
 
 #include "xparameters.h"
 #include "xpseudo_asm.h"
+#if defined(__ARM_ARCH_7A__) &&  __ARM_ARCH_7A__ == 1
+// cortexa9
 #include "xreg_cortexa9.h"
+#define __ARM_CORTEX_A9__ 1
+#elif defined(__ARM_ARCH_7R__) && __ARM_ARCH_7R__ == 1
+// cortexr5
+#error "unsupported arm arch"
+#elif defined(__ARM_ARCH_8A) && __ARM_ARCH_8A == 1
+#include "xreg_cortexa53.h"
+#else
+#error "unknown arm architecture"
+#endif
 
+#if defined(__ARM_CORTEX_A9__) && __ARM_CORTEX_A9__
 //#define COUNTS_PER_SECOND          (XPAR_CPU_CORTEXA9_CORE_CLOCK_FREQ_HZ / 64)
 // the above runs 64x too fast, so remove the division by 64 ...
 #define COUNTS_PER_SECOND          (XPAR_CPU_CORTEXA9_CORE_CLOCK_FREQ_HZ)
+#endif
 
 void usleep(unsigned int useconds)
 {
+#if defined(__ARM_ARCH_8A) && __ARM_ARCH_8A == 1
+	int result = usleep_A53(useconds);
+#elif defined(__ARM_ARCH_7R__) && __ARM_ARCH_7R__ == 1
+	int result = usleep_R5(useconds);
+#elif defined(__ARM_CORTEX_A9__) && __ARM_CORTEX_A9__
 	unsigned long tEnd, tCur;
 	unsigned int reg;
 	// debug
@@ -123,6 +141,7 @@ void usleep(unsigned int useconds)
 
 	//return 0;
 	return;
+#endif
 }
 
 #endif // #if !defined(USE_DEFAULT_USLEEP)
