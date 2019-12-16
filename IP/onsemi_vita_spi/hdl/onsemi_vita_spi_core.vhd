@@ -1,32 +1,32 @@
 -------------------------------------------------------------------------------
---  
---        ** **        **          **  ****      **  **********  ********** ® 
---       **   **        **        **   ** **     **  **              ** 
---      **     **        **      **    **  **    **  **              ** 
---     **       **        **    **     **   **   **  *********       ** 
---    **         **        **  **      **    **  **  **              ** 
---   **           **        ****       **     ** **  **              ** 
---  **  .........  **        **        **      ****  **********      ** 
---     ........... 
---                                     Reach Further™ 
---  
+--
+--        ** **        **          **  ****      **  **********  ********** ®
+--       **   **        **        **   ** **     **  **              **
+--      **     **        **      **    **  **    **  **              **
+--     **       **        **    **     **   **   **  *********       **
+--    **         **        **  **      **    **  **  **              **
+--   **           **        ****       **     ** **  **              **
+--  **  .........  **        **        **      ****  **********      **
+--     ...........
+--                                     Reach Further™
+--
 -------------------------------------------------------------------------------
 --
--- This design is the property of Avnet.  Publication of this 
--- design is not authorized without written consent from Avnet. 
--- 
--- Please direct any questions to the PicoZed community support forum: 
---    http://www.zedboard.org/forum 
--- 
--- Disclaimer: 
---    Avnet, Inc. makes no warranty for the use of this code or design. 
---    This code is provided  "As Is". Avnet, Inc assumes no responsibility for 
---    any errors, which may appear in this code, nor does it make a commitment 
---    to update the information contained herein. Avnet, Inc specifically 
---    disclaims any implied warranties of fitness for a particular purpose. 
---                     Copyright(c) 2017 Avnet, Inc. 
---                             All rights reserved. 
--- 
+-- This design is the property of Avnet.  Publication of this
+-- design is not authorized without written consent from Avnet.
+--
+-- Please direct any questions to the PicoZed community support forum:
+--    http://www.zedboard.org/forum
+--
+-- Disclaimer:
+--    Avnet, Inc. makes no warranty for the use of this code or design.
+--    This code is provided  "As Is". Avnet, Inc assumes no responsibility for
+--    any errors, which may appear in this code, nor does it make a commitment
+--    to update the information contained herein. Avnet, Inc specifically
+--    disclaims any implied warranties of fitness for a particular purpose.
+--                     Copyright(c) 2017 Avnet, Inc.
+--                             All rights reserved.
+--
 -------------------------------------------------------------------------------
 --
 -- Create Date:         Sep 15, 2011
@@ -40,10 +40,10 @@
 --
 -- Description:         ON Semiconductor VITA SPI controller - Core Logic.
 --
--- Dependencies:        
+-- Dependencies:
 --
 -- Revision:            Sep 15, 2011: 1.00 Initial version:
---                                         - VITA SPI controller 
+--                                         - VITA SPI controller
 --                      Sep 22, 2011: 1.01 Added:
 --                                         - ISERDES interface
 --                      Sep 28, 2011: 1.02 Added:
@@ -111,357 +111,357 @@ library UNISIM;
 use UNISIM.VComponents.all;
 
 entity onsemi_vita_spi_core is
-  Generic
-  (
-    C_FAMILY                       : string  := "zynq"
-  );
-  Port
-  (
-    oe                             : in  std_logic;
-    -- HOST Interface - SPI
-    host_spi_clk                   : in  std_logic;
-    host_spi_reset                 : in  std_logic;
-    host_spi_timing                : in  std_logic_vector(15 downto 0);
-    host_spi_status_busy           : out std_logic;
-    host_spi_status_error          : out std_logic;
-    host_spi_txfifo_clk            : in  std_logic;                          	
-    host_spi_txfifo_wen            : in  std_logic;                              
-    host_spi_txfifo_din            : in  std_logic_vector(31 downto 0);         
-    host_spi_txfifo_full           : out std_logic; 
-    host_spi_rxfifo_clk            : in  std_logic;                          	
-    host_spi_rxfifo_ren            : in  std_logic;                              
-    host_spi_rxfifo_dout           : out std_logic_vector(31 downto 0);         
-    host_spi_rxfifo_empty          : out std_logic; 
-    -- I/O pins
-    io_vita_spi_sclk               : out std_logic;
-    io_vita_spi_ssel_n             : out std_logic;
-    io_vita_spi_mosi               : out std_logic;
-    io_vita_spi_miso               : in  std_logic;
-    -- Debug Ports
-    debug_spi_o                    : out std_logic_vector( 95 downto 0)
-  );
+    Generic
+    (
+        C_FAMILY : string  := "zynq"
+    );
+    Port
+    (
+        oe                    : in  std_logic;
+        -- HOST Interface - SPI
+        host_spi_clk          : in  std_logic;
+        host_spi_reset        : in  std_logic;
+        host_spi_timing       : in  std_logic_vector(15 downto 0);
+        host_spi_status_busy  : out std_logic;
+        host_spi_status_error : out std_logic;
+        host_spi_txfifo_clk   : in  std_logic;
+        host_spi_txfifo_wen   : in  std_logic;
+        host_spi_txfifo_din   : in  std_logic_vector(31 downto 0);
+        host_spi_txfifo_full  : out std_logic;
+        host_spi_rxfifo_clk   : in  std_logic;
+        host_spi_rxfifo_ren   : in  std_logic;
+        host_spi_rxfifo_dout  : out std_logic_vector(31 downto 0);
+        host_spi_rxfifo_empty : out std_logic;
+        -- I/O pins
+        io_vita_spi_sclk      : out std_logic;
+        io_vita_spi_ssel_n    : out std_logic;
+        io_vita_spi_mosi      : out std_logic;
+        io_vita_spi_miso      : in  std_logic;
+        -- Debug Ports
+        debug_spi_o           : out std_logic_vector( 95 downto 0)
+    );
 end onsemi_vita_spi_core;
 
 architecture rtl of onsemi_vita_spi_core is
 
-  --
-  -- VITA SPI Controller
-  --
+    --
+    -- VITA SPI Controller
+    --
 
-  component spi_top is
-  generic
-  (     
-    gSIMULATION                    : integer := 0;    
-    gSysClkSpeed                   : integer := 50;
-        
-    --LowLevel SPI settings           
-    gSpiClkSpeed                   : integer := 1000;  -- SPI Clock Speed in kHz
-    gUseFixedSpeed                 : integer := 1;     -- 0: use timing input 
-                                                       -- 1: use SysClkSpeed/SpiClkSpeed generics
-        
-    gDATA_WIDTH                    : integer := 26; 
-    gTxMSB_FIRST                   : integer := 1;
-    gRxMSB_FIRST                   : integer := 1;
-                
-    gSCLK_POLARITY                 : std_logic := '0'; --'0': idle low, '1': idle high
-    gCS_POLARITY                   : std_logic := '1'; --'0': active high, '1': active low
-    gEN_POLARITY                   : std_logic := '0'; --'0': normal, '1': invert
-    gMOSI_POLARITY                 : std_logic := '0'; --'0': normal, '1': invert
-    gMISO_POLARITY                 : std_logic := '0'; --'0': normal, '1': invert
-        
-    gMISO_SAMPLE                   : std_logic := '1'; --'0': sample on rising edge
-                                                       --'1': sample on falling edge
-    gMOSI_CLK                      : std_logic := '0'; --'0': clock out on rising edge
-                                                       --'1': clock out on falling edge
-         
-    --Seq SPI settings                                                                               
-    gSyncTriggerWidth              : integer;          -- min 1, max 15  
-    gRWbitposition                 : integer := 0      --seen from LSB                              
-  );       
-  Port	
-  (
-    CLOCK                          : in  std_logic;	
-    RESET                          : in  std_logic;                                             
-    TIMING                         : in  std_logic_vector(15 downto 0);
-        
-    BUSY                           : out	std_logic;
-                                                        
-    --synchro signals 		
-    synctriggers                   : in  std_logic_vector(gSyncTriggerWidth-1 downto 0); 
-    sync1_select                   : in  std_logic_vector(3 downto 0);	
-    sync2_select                   : in  std_logic_vector(3 downto 0);	
-		    							                                
-    -- Fifo signals    
-    -- read fifo interface (SPI write path/SPI read address path)                                                           
-    APP_RDFIFO_CLK                 : out std_logic;                          	
-    APP_RDFIFO_EN	                 : out std_logic;                              
-    APP_RDFIFO_DATA_OUT            : in  std_logic_vector( 31 downto 0);         
-    APP_RDFIFO_EMPTY   	           : in  std_logic; 
-        
-    -- write fifo interface (SPI read data path)
-    APP_WRFIFO_CLK                 : out std_logic;                          	
-    APP_WRFIFO_EN                  : out std_logic;                              
-    APP_WRFIFO_DATA_IN             : out std_logic_vector( 31 downto 0);         
-    APP_WRFIFO_FULL   	           : in  std_logic; 
-        
-    ERROR                          : out std_logic; 
+    component spi_top is
+        generic
+        (
+            gSIMULATION  : integer := 0;
+            gSysClkSpeed : integer := 50;
+
+            --LowLevel SPI settings
+            gSpiClkSpeed   : integer := 1000; -- SPI Clock Speed in kHz
+            gUseFixedSpeed : integer := 1;    -- 0: use timing input
+                                                -- 1: use SysClkSpeed/SpiClkSpeed generics
+
+            gDATA_WIDTH  : integer := 26;
+            gTxMSB_FIRST : integer := 1;
+            gRxMSB_FIRST : integer := 1;
+
+            gSCLK_POLARITY : std_logic := '0'; --'0': idle low, '1': idle high
+            gCS_POLARITY   : std_logic := '1'; --'0': active high, '1': active low
+            gEN_POLARITY   : std_logic := '0'; --'0': normal, '1': invert
+            gMOSI_POLARITY : std_logic := '0'; --'0': normal, '1': invert
+            gMISO_POLARITY : std_logic := '0'; --'0': normal, '1': invert
+
+            gMISO_SAMPLE : std_logic := '1'; --'0': sample on rising edge
+                                             --'1': sample on falling edge
+            gMOSI_CLK : std_logic := '0'; --'0': clock out on rising edge
+                                          --'1': clock out on falling edge
+
+            --Seq SPI settings
+            gSyncTriggerWidth : integer;     -- min 1, max 15
+            gRWbitposition    : integer := 0 --seen from LSB
+        );
+        Port
+        (
+            CLOCK  : in std_logic;
+            RESET  : in std_logic;
+            TIMING : in std_logic_vector(15 downto 0);
+
+            BUSY : out std_logic;
+
+            --synchro signals
+            synctriggers : in std_logic_vector(gSyncTriggerWidth-1 downto 0);
+            sync1_select : in std_logic_vector(3 downto 0);
+            sync2_select : in std_logic_vector(3 downto 0);
+
+            -- Fifo signals
+            -- read fifo interface (SPI write path/SPI read address path)
+            APP_RDFIFO_CLK      : out std_logic;
+            APP_RDFIFO_EN       : out std_logic;
+            APP_RDFIFO_DATA_OUT : in  std_logic_vector( 31 downto 0);
+            APP_RDFIFO_EMPTY    : in  std_logic;
+
+            -- write fifo interface (SPI read data path)
+            APP_WRFIFO_CLK     : out std_logic;
+            APP_WRFIFO_EN      : out std_logic;
+            APP_WRFIFO_DATA_IN : out std_logic_vector( 31 downto 0);
+            APP_WRFIFO_FULL    : in  std_logic;
+
+            ERROR : out std_logic;
+
+            --
+            -- SPI
+            --
+            SCLK : out std_logic;
+            MOSI : out std_logic;
+            MISO : in  std_logic;
+            CS   : out std_logic;
+            EN   : out std_logic
+        );
+    end component spi_top;
+
+    signal vita_spi_status_busy  : std_logic;
+    signal vita_spi_status_error : std_logic;
 
     --
-    -- SPI
+    -- VITA SPI FIFOs
     --
-    SCLK                           : out std_logic;
-    MOSI                           : out std_logic;
-    MISO                           : in  std_logic;
-    CS                             : out std_logic;
-    EN                             : out std_logic  	  		
-  );		
-  end component spi_top;
 
-  signal vita_spi_status_busy      : std_logic;
-  signal vita_spi_status_error     : std_logic;
+    component afifo_32 is
+        generic
+        (
+            C_FAMILY : string := "virtex6"
+        );
+        port
+        (
+            rst    : IN std_logic;
 
-  --
-  -- VITA SPI FIFOs
-  --
+            wr_clk : IN std_logic;
+            wr_en  : IN std_logic;
+            din    : IN std_logic_VECTOR(31 downto 0);
 
-  component afifo_32 is
-    generic
-    (
-      C_FAMILY                     : string               := "virtex6"
-    );
-    port
-    (
-      rst                          : IN std_logic;
+            rd_clk : IN std_logic;
+            rd_en  : IN std_logic;
+            dout   : OUT std_logic_VECTOR(31 downto 0);
 
-      wr_clk                       : IN std_logic;
-      wr_en                        : IN std_logic;
-      din                          : IN std_logic_VECTOR(31 downto 0);
+            empty  : OUT std_logic;
+            full   : OUT std_logic
+        );
+    end component afifo_32;
 
-      rd_clk                       : IN std_logic;
-      rd_en                        : IN std_logic;
-      dout                         : OUT std_logic_VECTOR(31 downto 0);
+    signal vita_spi_txfifo_clk   : std_logic;
+    signal vita_spi_txfifo_ren   : std_logic;
+    signal vita_spi_txfifo_dout  : std_logic_vector(31 downto 0);
+    signal vita_spi_txfifo_empty : std_logic;
 
-      empty                        : OUT std_logic;
-      full                         : OUT std_logic
-    );
-  end component afifo_32;
-  
-  signal vita_spi_txfifo_clk       : std_logic;
-  signal vita_spi_txfifo_ren       : std_logic;
-  signal vita_spi_txfifo_dout      : std_logic_vector(31 downto 0);  
-  signal vita_spi_txfifo_empty     : std_logic;
-  
-  signal vita_spi_rxfifo_clk       : std_logic;
-  signal vita_spi_rxfifo_wen       : std_logic;
-  signal vita_spi_rxfifo_din       : std_logic_vector(31 downto 0);  
-  signal vita_spi_rxfifo_full      : std_logic;
+    signal vita_spi_rxfifo_clk   : std_logic;
+    signal vita_spi_rxfifo_wen   : std_logic;
+    signal vita_spi_rxfifo_din   : std_logic_vector(31 downto 0);
+    signal vita_spi_rxfifo_full  : std_logic;
 
-  --
-  -- I/O registers & buffers
-  --
+    --
+    -- I/O registers & buffers
+    --
 
-  signal oe_n                      : std_logic;
+    signal oe_n                  : std_logic;
 
-  signal vita_spi_sclk_o           : std_logic;
-  signal vita_spi_ssel_n_o         : std_logic;
-  signal vita_spi_mosi_o           : std_logic;
+    signal vita_spi_sclk_o       : std_logic;
+    signal vita_spi_ssel_n_o     : std_logic;
+    signal vita_spi_mosi_o       : std_logic;
 
-  signal vita_spi_sclk_t           : std_logic;
-  signal vita_spi_ssel_n_t         : std_logic;
-  signal vita_spi_mosi_t           : std_logic;
+    signal vita_spi_sclk_t       : std_logic;
+    signal vita_spi_ssel_n_t     : std_logic;
+    signal vita_spi_mosi_t       : std_logic;
 
 begin
 
-  --
-  -- SPI Controller
-  --
+    --
+    -- SPI Controller
+    --
 
-  vita_spi: spi_top 
-  generic map
-  (     
-    gSIMULATION                    => 0,     --gSIMULATION,  
-    gSysClkSpeed                   => 50,    -- 50MHz  --gSysClkSpeed,
-        
-    --LowLevel SPI settings           
-    gSpiClkSpeed                   => 1000,  -- 1000KHz (or 1MHz)
-    gUseFixedSpeed                 => 0, 
-        
-    gDATA_WIDTH                    => 26, 
-    gTxMSB_FIRST                   => 1,
-    gRxMSB_FIRST                   => 1,
-                
-    gSCLK_POLARITY                 => '0', 
-    gCS_POLARITY                   => '1', 
-    gEN_POLARITY                   => '0', 
-    gMOSI_POLARITY                 => '0', 
-    gMISO_POLARITY                 => '0', 
-       
-    gMISO_SAMPLE                   => '0', 
-    gMOSI_CLK                      => '0',
-         
-    --Seq SPI settings                                                                               
-    gSyncTriggerWidth              => 10,
-    gRWbitposition                 => 16                     
-  )  
-  port map           
-  (
-    CLOCK                          => host_spi_clk,  
-    RESET                          => host_spi_reset,  
-    TIMING                         => host_spi_timing, --TIMING,
-        
-    BUSY                           => vita_spi_status_busy,           
-                               
-    --synchro signals                             
-    synctriggers                   => (others => '0'), --synctriggers,  
-    sync1_select                   => (others => '0'), --sync1_select,
-    sync2_select                   => (others => '0'), --sync2_select,
-                                                                                                                                                                             
-    -- Fifo signals    
-    -- read fifo interface (SPI write path/SPI read address path)                                                           
-    APP_RDFIFO_CLK                 => vita_spi_txfifo_clk,         
-    APP_RDFIFO_EN                  => vita_spi_txfifo_ren,     
-    APP_RDFIFO_DATA_OUT            => vita_spi_txfifo_dout,     
-    APP_RDFIFO_EMPTY               => vita_spi_txfifo_empty,
-        
-    -- write fifo interface (SPI read data path)
-    APP_WRFIFO_CLK                 => vita_spi_rxfifo_clk,   
-    APP_WRFIFO_EN                  => vita_spi_rxfifo_wen,     
-    APP_WRFIFO_DATA_IN             => vita_spi_rxfifo_din,     
-    APP_WRFIFO_FULL                => vita_spi_rxfifo_full,
-        
-    ERROR                          => vita_spi_status_error,         
+    vita_spi: spi_top
+    generic map
+    (
+        gSIMULATION  => 0,  --gSIMULATION,
+        gSysClkSpeed => 50, -- 50MHz  --gSysClkSpeed,
+
+        --LowLevel SPI settings
+        gSpiClkSpeed   => 1000, -- 1000KHz (or 1MHz)
+        gUseFixedSpeed => 0,
+
+        gDATA_WIDTH  => 26,
+        gTxMSB_FIRST => 1,
+        gRxMSB_FIRST => 1,
+
+        gSCLK_POLARITY => '0',
+        gCS_POLARITY   => '1',
+        gEN_POLARITY   => '0',
+        gMOSI_POLARITY => '0',
+        gMISO_POLARITY => '0',
+
+        gMISO_SAMPLE   => '0',
+        gMOSI_CLK      => '0',
+
+        --Seq SPI settings
+        gSyncTriggerWidth => 10,
+        gRWbitposition    => 16
+    )
+    port map
+    (
+        CLOCK  => host_spi_clk,
+        RESET  => host_spi_reset,
+        TIMING => host_spi_timing, --TIMING,
+
+        BUSY => vita_spi_status_busy,
+
+        --synchro signals
+        synctriggers => (others => '0'), --synctriggers,
+        sync1_select => (others => '0'), --sync1_select,
+        sync2_select => (others => '0'), --sync2_select,
+
+        -- Fifo signals
+        -- read fifo interface (SPI write path/SPI read address path)
+        APP_RDFIFO_CLK      => vita_spi_txfifo_clk,
+        APP_RDFIFO_EN       => vita_spi_txfifo_ren,
+        APP_RDFIFO_DATA_OUT => vita_spi_txfifo_dout,
+        APP_RDFIFO_EMPTY    => vita_spi_txfifo_empty,
+
+        -- write fifo interface (SPI read data path)
+        APP_WRFIFO_CLK     => vita_spi_rxfifo_clk,
+        APP_WRFIFO_EN      => vita_spi_rxfifo_wen,
+        APP_WRFIFO_DATA_IN => vita_spi_rxfifo_din,
+        APP_WRFIFO_FULL    => vita_spi_rxfifo_full,
+
+        ERROR => vita_spi_status_error,
+
+        --
+        -- SPI
+        --
+        SCLK => vita_spi_sclk_o,
+        MOSI => vita_spi_mosi_o,
+        MISO => io_vita_spi_miso,
+        CS   => vita_spi_ssel_n_o,
+        EN   => open
+    );
+
+    host_spi_status_busy  <= vita_spi_status_busy;
+    host_spi_status_error <= vita_spi_status_error;
 
     --
-    -- SPI
+    -- VITA SPI FIFOs
     --
-    SCLK                           => vita_spi_sclk_o,  
-    MOSI                           => vita_spi_mosi_o,          
-    MISO                           => io_vita_spi_miso, 
-    CS                             => vita_spi_ssel_n_o, 
-    EN                             => open                                                 
-  );
 
-  host_spi_status_busy  <= vita_spi_status_busy;
-  host_spi_status_error <= vita_spi_status_error;  
-  
-  --
-  -- VITA SPI FIFOs
-  --
+    vita_spi_txfifo_l : afifo_32
+    generic map
+    (
+        C_FAMILY => C_FAMILY
+    )
+    port map
+    (
+        rst    => host_spi_reset,
 
-  vita_spi_txfifo_l : afifo_32
-  generic map
-  (
-    C_FAMILY                     => C_FAMILY
-  )
-  port map
-  (
-    rst                          => host_spi_reset,
+        wr_clk => host_spi_txfifo_clk,
+        wr_en  => host_spi_txfifo_wen,
+        din    => host_spi_txfifo_din,
 
-    wr_clk                       => host_spi_txfifo_clk,
-    wr_en                        => host_spi_txfifo_wen,
-    din                          => host_spi_txfifo_din,
+        rd_clk => vita_spi_txfifo_clk,
+        rd_en  => vita_spi_txfifo_ren,
+        dout   => vita_spi_txfifo_dout,
 
-    rd_clk                       => vita_spi_txfifo_clk,
-    rd_en                        => vita_spi_txfifo_ren,
-    dout                         => vita_spi_txfifo_dout,
+        empty  => vita_spi_txfifo_empty,
+        full   => host_spi_txfifo_full
+    );
 
-    empty                        => vita_spi_txfifo_empty,
-    full                         => host_spi_txfifo_full
-  );
+    vita_spi_rxfifo_l : afifo_32
+    generic map
+    (
+        C_FAMILY => C_FAMILY
+    )
+    port map
+    (
+        rst    => host_spi_reset,
 
-  vita_spi_rxfifo_l : afifo_32
-  generic map
-  (
-    C_FAMILY                     => C_FAMILY
-  )
-  port map
-  (
-    rst                          => host_spi_reset,
+        wr_clk => vita_spi_rxfifo_clk,
+        wr_en  => vita_spi_rxfifo_wen,
+        din    => vita_spi_rxfifo_din,
 
-    wr_clk                       => vita_spi_rxfifo_clk,
-    wr_en                        => vita_spi_rxfifo_wen,
-    din                          => vita_spi_rxfifo_din,
+        rd_clk => host_spi_rxfifo_clk,
+        rd_en  => host_spi_rxfifo_ren,
+        dout   => host_spi_rxfifo_dout,
 
-    rd_clk                       => host_spi_rxfifo_clk,
-    rd_en                        => host_spi_rxfifo_ren,
-    dout                         => host_spi_rxfifo_dout,
+        empty  => host_spi_rxfifo_empty,
+        full   => vita_spi_rxfifo_full
+    );
 
-    empty                        => host_spi_rxfifo_empty,
-    full                         => vita_spi_rxfifo_full
-  );
-  
-  --
-  -- I/O registers & buffers
-  --
+    --
+    -- I/O registers & buffers
+    --
 
-  oe_n  <= not oe;
+    oe_n <= not oe;
 
-   --io_oregs2_l : process (host_spi_clk)
-   --begin
-   --   if Rising_Edge(host_spi_clk) then
-         vita_spi_sclk_t   <= oe_n;
-         vita_spi_ssel_n_t <= oe_n;
-         vita_spi_mosi_t   <= oe_n;
-   --   end if;
-   --end process;
+    --io_oregs2_l : process (host_spi_clk)
+    --begin
+    --   if Rising_Edge(host_spi_clk) then
+    vita_spi_sclk_t   <= oe_n;
+    vita_spi_ssel_n_t <= oe_n;
+    vita_spi_mosi_t   <= oe_n;
+    --   end if;
+    --end process;
 
 
-   --
-   -- Tri-stateable outputs
-   --    Can be used to disable outputs to FMC connector
-   --    until FMC module is correctly identified.
-   -- 
+    --
+    -- Tri-stateable outputs
+    --    Can be used to disable outputs to FMC connector
+    --    until FMC module is correctly identified.
+    --
 
-   OBUFT_vita_spi_sclk : OBUFT
-   port map (
-      O => io_vita_spi_sclk,
-      I => vita_spi_sclk_o,
-      T => vita_spi_sclk_t
-   );
+    OBUFT_vita_spi_sclk : OBUFT
+        port map (
+            O => io_vita_spi_sclk,
+            I => vita_spi_sclk_o,
+            T => vita_spi_sclk_t
+        );
 
-   OBUFT_vita_spi_ssel_n : OBUFT
-   port map (
-      O => io_vita_spi_ssel_n,
-      I => vita_spi_ssel_n_o,
-      T => vita_spi_ssel_n_t
-   );
+    OBUFT_vita_spi_ssel_n : OBUFT
+        port map (
+            O => io_vita_spi_ssel_n,
+            I => vita_spi_ssel_n_o,
+            T => vita_spi_ssel_n_t
+        );
 
-   OBUFT_vita_spi_mosi : OBUFT
-   port map (
-      O => io_vita_spi_mosi,
-      I => vita_spi_mosi_o,
-      T => vita_spi_mosi_t
-   );
+    OBUFT_vita_spi_mosi : OBUFT
+        port map (
+            O => io_vita_spi_mosi,
+            I => vita_spi_mosi_o,
+            T => vita_spi_mosi_t
+        );
 
-   --
-   -- Debug Ports
-   --    Can be used to connect to ChipScope for debugging.
-   --    Having a port makes these signals accessible for debug via EDK.
-   -- 
+    --
+    -- Debug Ports
+    --    Can be used to connect to ChipScope for debugging.
+    --    Having a port makes these signals accessible for debug via EDK.
+    --
 
-   debug_spi_l : process (host_spi_clk)
-   begin
-      if Rising_Edge(host_spi_clk) then
-         debug_spi_o(15 downto  0) <= host_spi_timing;
-         debug_spi_o(          16) <= vita_spi_sclk_o;
-         debug_spi_o(          17) <= vita_spi_ssel_n_o;
-         debug_spi_o(          18) <= vita_spi_mosi_o;
-         debug_spi_o(          19) <= io_vita_spi_miso;
-         debug_spi_o(          20) <= '0';
-         debug_spi_o(          21) <= host_spi_txfifo_wen;
-         debug_spi_o(          22) <= host_spi_rxfifo_ren;
-         debug_spi_o(          23) <= '0';
-         debug_spi_o(          24) <= '0';
-         debug_spi_o(          25) <= host_spi_reset;
-         debug_spi_o(          26) <= vita_spi_status_busy;
-         debug_spi_o(          27) <= vita_spi_status_error;
-         debug_spi_o(          28) <= vita_spi_rxfifo_wen;
-         debug_spi_o(          29) <= vita_spi_txfifo_ren;
-         debug_spi_o(          30) <= vita_spi_rxfifo_full;
-         debug_spi_o(          31) <= vita_spi_txfifo_empty;
-         debug_spi_o(63 downto 32) <= vita_spi_rxfifo_din;
-         debug_spi_o(95 downto 64) <= vita_spi_txfifo_dout;
-      end if;
-   end process;
+    debug_spi_l : process (host_spi_clk)
+    begin
+        if Rising_Edge(host_spi_clk) then
+            debug_spi_o(15 downto  0) <= host_spi_timing;
+            debug_spi_o(          16) <= vita_spi_sclk_o;
+            debug_spi_o(          17) <= vita_spi_ssel_n_o;
+            debug_spi_o(          18) <= vita_spi_mosi_o;
+            debug_spi_o(          19) <= io_vita_spi_miso;
+            debug_spi_o(          20) <= '0';
+            debug_spi_o(          21) <= host_spi_txfifo_wen;
+            debug_spi_o(          22) <= host_spi_rxfifo_ren;
+            debug_spi_o(          23) <= '0';
+            debug_spi_o(          24) <= '0';
+            debug_spi_o(          25) <= host_spi_reset;
+            debug_spi_o(          26) <= vita_spi_status_busy;
+            debug_spi_o(          27) <= vita_spi_status_error;
+            debug_spi_o(          28) <= vita_spi_rxfifo_wen;
+            debug_spi_o(          29) <= vita_spi_txfifo_ren;
+            debug_spi_o(          30) <= vita_spi_rxfifo_full;
+            debug_spi_o(          31) <= vita_spi_txfifo_empty;
+            debug_spi_o(63 downto 32) <= vita_spi_rxfifo_din;
+            debug_spi_o(95 downto 64) <= vita_spi_txfifo_dout;
+        end if;
+    end process;
 
 end rtl;
