@@ -113,11 +113,11 @@ use UNISIM.VComponents.all;
 entity onsemi_vita_spi_core is
     Generic
     (
-        C_FAMILY : string  := "zynq"
+        C_FAMILY : string := "zynq"
     );
     Port
     (
-        oe                    : in  std_logic;
+        oe : in std_logic;
         -- HOST Interface - SPI
         host_spi_clk          : in  std_logic;
         host_spi_reset        : in  std_logic;
@@ -157,7 +157,7 @@ architecture rtl of onsemi_vita_spi_core is
             --LowLevel SPI settings
             gSpiClkSpeed   : integer := 1000; -- SPI Clock Speed in kHz
             gUseFixedSpeed : integer := 1;    -- 0: use timing input
-                                                -- 1: use SysClkSpeed/SpiClkSpeed generics
+                                              -- 1: use SysClkSpeed/SpiClkSpeed generics
 
             gDATA_WIDTH  : integer := 26;
             gTxMSB_FIRST : integer := 1;
@@ -260,15 +260,15 @@ architecture rtl of onsemi_vita_spi_core is
     -- I/O registers & buffers
     --
 
-    signal oe_n                  : std_logic;
+    signal oe_n : std_logic;
 
-    signal vita_spi_sclk_o       : std_logic;
-    signal vita_spi_ssel_n_o     : std_logic;
-    signal vita_spi_mosi_o       : std_logic;
+    signal vita_spi_sclk_o   : std_logic;
+    signal vita_spi_ssel_n_o : std_logic;
+    signal vita_spi_mosi_o   : std_logic;
 
-    signal vita_spi_sclk_t       : std_logic;
-    signal vita_spi_ssel_n_t     : std_logic;
-    signal vita_spi_mosi_t       : std_logic;
+    signal vita_spi_sclk_t   : std_logic;
+    signal vita_spi_ssel_n_t : std_logic;
+    signal vita_spi_mosi_t   : std_logic;
 
 begin
 
@@ -296,8 +296,8 @@ begin
         gMOSI_POLARITY => '0',
         gMISO_POLARITY => '0',
 
-        gMISO_SAMPLE   => '0',
-        gMOSI_CLK      => '0',
+        gMISO_SAMPLE => '0',
+        gMOSI_CLK    => '0',
 
         --Seq SPI settings
         gSyncTriggerWidth => 10,

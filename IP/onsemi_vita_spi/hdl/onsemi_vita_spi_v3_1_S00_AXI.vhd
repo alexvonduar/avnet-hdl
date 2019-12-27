@@ -243,7 +243,7 @@ architecture arch_imp of onsemi_vita_spi_v3_1_S00_AXI is
     component onsemi_vita_spi_core is
         Generic
         (
-            C_FAMILY : string  := "zynq"
+            C_FAMILY : string := "zynq"
         );
         Port
         (
@@ -425,14 +425,14 @@ begin
     begin
         if rising_edge(S_AXI_ACLK) then
             if S_AXI_ARESETN = '0' then
-                axi_bvalid  <= '0';
-                axi_bresp   <= "00"; --need to work more on the responses
+                axi_bvalid <= '0';
+                axi_bresp  <= "00"; --need to work more on the responses
             else
-                if (axi_awready = '1' and S_AXI_AWVALID = '1' and axi_wready = '1' and S_AXI_WVALID = '1' and axi_bvalid = '0'  ) then
+                if (axi_awready = '1' and S_AXI_AWVALID = '1' and axi_wready = '1' and S_AXI_WVALID = '1' and axi_bvalid = '0') then
                     axi_bvalid <= '1';
                     axi_bresp  <= "00";
-                elsif (S_AXI_BREADY = '1' and axi_bvalid = '1') then   --check if bready is asserted while bvalid is high)
-                    axi_bvalid <= '0';                                 -- (there is a possibility that bready is always asserted high)
+                elsif (S_AXI_BREADY = '1' and axi_bvalid = '1') then --check if bready is asserted while bvalid is high)
+                    axi_bvalid <= '0'; -- (there is a possibility that bready is always asserted high)
                 end if;
             end if;
         end if;
@@ -538,7 +538,7 @@ begin
                     -- acceptance of read address by the slave (axi_arready),
                     -- output the read dada
                     -- Read address mux
-                    axi_rdata <= reg_data_out;     -- register read data
+                    axi_rdata <= reg_data_out; -- register read data
                 end if;
             end if;
         end if;
