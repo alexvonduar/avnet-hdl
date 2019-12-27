@@ -58,31 +58,31 @@ use UNISIM.vcomponents.all;
 -----------------------
 entity correct_column_fpn_prnu_dsp48e is
     generic (
-        NROF_DATACONN       : integer;
-        DATAWIDTH           : integer;
-        ENABLECORRECT       : boolean;
-        C_FAMILY            : string    := "virtex6"
+        NROF_DATACONN : integer;
+        DATAWIDTH     : integer;
+        ENABLECORRECT : boolean;
+        C_FAMILY      : string := "virtex6"
     );
     port (
         -- Control signals
-        CLOCK               : in    std_logic;
-        RESET               : in    std_logic;
-        CorrectValues       : in    std_logic_vector((NROF_DATACONN*4*16)-1 downto 0);
+        CLOCK         : in std_logic;
+        RESET         : in std_logic;
+        CorrectValues : in std_logic_vector((NROF_DATACONN*4*16)-1 downto 0);
 
-        WR_DATA_in          : in    std_logic_vector((NROF_DATACONN*DATAWIDTH)-1 downto 0);
-        WR_NEXT_in          : in    std_logic;
-        WR_FRAME_in         : in    std_logic;
-        WR_LINE_in          : in    std_logic;
-        WR_WINDOW_in        : in    std_logic;
+        WR_DATA_in   : in std_logic_vector((NROF_DATACONN*DATAWIDTH)-1 downto 0);
+        WR_NEXT_in   : in std_logic;
+        WR_FRAME_in  : in std_logic;
+        WR_LINE_in   : in std_logic;
+        WR_WINDOW_in : in std_logic;
 
-        WR_DATA_out         : out   std_logic_vector((NROF_DATACONN*DATAWIDTH)-1 downto 0);
-        WR_NEXT_out         : out   std_logic;
-        WR_FRAME_out        : out   std_logic;
-        WR_LINE_out         : out   std_logic;
-        WR_WINDOW_out       : out   std_logic;
+        WR_DATA_out   : out std_logic_vector((NROF_DATACONN*DATAWIDTH)-1 downto 0);
+        WR_NEXT_out   : out std_logic;
+        WR_FRAME_out  : out std_logic;
+        WR_LINE_out   : out std_logic;
+        WR_WINDOW_out : out std_logic;
 
-        VIDEO_SYNC_IN       : in    std_logic_vector(4 downto 0);
-        VIDEO_SYNC_OUT      : out   std_logic_vector(4 downto 0)
+        VIDEO_SYNC_IN  : in  std_logic_vector(4 downto 0);
+        VIDEO_SYNC_OUT : out std_logic_vector(4 downto 0)
     );
 end correct_column_fpn_prnu_dsp48e;
 
@@ -114,15 +114,15 @@ architecture rtl of correct_column_fpn_prnu_dsp48e is
     signal C : CArrayTp;
     signal P : PArrayTp;
 
-    signal overflow            : std_logic_vector(NROF_DATACONN-1 downto 0);
-    signal underflow           : std_logic_vector(NROF_DATACONN-1 downto 0);
+    signal overflow  : std_logic_vector(NROF_DATACONN-1 downto 0);
+    signal underflow : std_logic_vector(NROF_DATACONN-1 downto 0);
 
-    constant zero              : std_logic := '0';
-    constant zeros             : std_logic_vector(47 downto 0) := X"000000000000";
-    constant one               : std_logic := '1';
-    constant ones              : std_logic_vector(47 downto 0) := X"FFFFFFFFFFFF";
+    constant zero  : std_logic := '0';
+    constant zeros : std_logic_vector(47 downto 0) := X"000000000000";
+    constant one   : std_logic := '1';
+    constant ones  : std_logic_vector(47 downto 0) := X"FFFFFFFFFFFF";
 
-    constant ALUMODE           : std_logic_vector(3 downto 0) := "0001";
+    constant ALUMODE : std_logic_vector(3 downto 0) := "0001";
     -- use: (ALUMODE = 0001)
     -- -Z + (X + Y + CARRYIN) – 1 =
     -- not (Z) + X + Y + CARRYIN
@@ -132,8 +132,8 @@ architecture rtl of correct_column_fpn_prnu_dsp48e is
     -- Z + X + Y + CARRYIN
     -- with Z as a negative number in 2s complement form
 
-    --                                                            6543210
-    constant OPMODE            : std_logic_vector(6 downto 0) := "0110101";
+    --                                                 6543210
+    constant OPMODE : std_logic_vector(6 downto 0) := "0110101";
     --with ALUMODE = 0001
     -- X = M (partial product 1)
     -- Y = M (partial product 2)
@@ -146,24 +146,24 @@ architecture rtl of correct_column_fpn_prnu_dsp48e is
 
     -- for debug...
     -- remapped
-    alias Channel0  : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_in((0*DATAWIDTH)+(DATAWIDTH-1) downto (0*DATAWIDTH));
-    --alias Channel1  : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_remapper((1*DATAWIDTH)+(DATAWIDTH-1) downto (1*DATAWIDTH));
-    --alias Channel2  : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_remapper((2*DATAWIDTH)+(DATAWIDTH-1) downto (2*DATAWIDTH));
-    --alias Channel3  : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_remapper((3*DATAWIDTH)+(DATAWIDTH-1) downto (3*DATAWIDTH));
-    --alias Channel4  : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_remapper((4*DATAWIDTH)+(DATAWIDTH-1) downto (4*DATAWIDTH));
-    --alias Channel5  : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_remapper((5*DATAWIDTH)+(DATAWIDTH-1) downto (5*DATAWIDTH));
-    --alias Channel6  : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_remapper((6*DATAWIDTH)+(DATAWIDTH-1) downto (6*DATAWIDTH));
-    --alias Channel7  : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_remapper((7*DATAWIDTH)+(DATAWIDTH-1) downto (7*DATAWIDTH));
+    alias Channel0 : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_in((0*DATAWIDTH)+(DATAWIDTH-1) downto (0*DATAWIDTH));
+    --alias Channel1 : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_remapper((1*DATAWIDTH)+(DATAWIDTH-1) downto (1*DATAWIDTH));
+    --alias Channel2 : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_remapper((2*DATAWIDTH)+(DATAWIDTH-1) downto (2*DATAWIDTH));
+    --alias Channel3 : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_remapper((3*DATAWIDTH)+(DATAWIDTH-1) downto (3*DATAWIDTH));
+    --alias Channel4 : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_remapper((4*DATAWIDTH)+(DATAWIDTH-1) downto (4*DATAWIDTH));
+    --alias Channel5 : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_remapper((5*DATAWIDTH)+(DATAWIDTH-1) downto (5*DATAWIDTH));
+    --alias Channel6 : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_remapper((6*DATAWIDTH)+(DATAWIDTH-1) downto (6*DATAWIDTH));
+    --alias Channel7 : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_remapper((7*DATAWIDTH)+(DATAWIDTH-1) downto (7*DATAWIDTH));
 
     -- corrected
-    alias CorrChannel0  : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_out((0*DATAWIDTH)+(DATAWIDTH-1) downto (0*DATAWIDTH));
-    --alias CorrChannel1  : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_corrected((1*DATAWIDTH)+(DATAWIDTH-1) downto (1*DATAWIDTH));
-    --alias CorrChannel2  : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_corrected((2*DATAWIDTH)+(DATAWIDTH-1) downto (2*DATAWIDTH));
-    --alias CorrChannel3  : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_corrected((3*DATAWIDTH)+(DATAWIDTH-1) downto (3*DATAWIDTH));
-    --alias CorrChannel4  : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_corrected((4*DATAWIDTH)+(DATAWIDTH-1) downto (4*DATAWIDTH));
-    --alias CorrChannel5  : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_corrected((5*DATAWIDTH)+(DATAWIDTH-1) downto (5*DATAWIDTH));
-    --alias CorrChannel6  : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_corrected((6*DATAWIDTH)+(DATAWIDTH-1) downto (6*DATAWIDTH));
-    --alias CorrChannel7  : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_corrected((7*DATAWIDTH)+(DATAWIDTH-1) downto (7*DATAWIDTH));
+    alias CorrChannel0 : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_out((0*DATAWIDTH)+(DATAWIDTH-1) downto (0*DATAWIDTH));
+    --alias CorrChannel1 : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_corrected((1*DATAWIDTH)+(DATAWIDTH-1) downto (1*DATAWIDTH));
+    --alias CorrChannel2 : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_corrected((2*DATAWIDTH)+(DATAWIDTH-1) downto (2*DATAWIDTH));
+    --alias CorrChannel3 : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_corrected((3*DATAWIDTH)+(DATAWIDTH-1) downto (3*DATAWIDTH));
+    --alias CorrChannel4 : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_corrected((4*DATAWIDTH)+(DATAWIDTH-1) downto (4*DATAWIDTH));
+    --alias CorrChannel5 : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_corrected((5*DATAWIDTH)+(DATAWIDTH-1) downto (5*DATAWIDTH));
+    --alias CorrChannel6 : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_corrected((6*DATAWIDTH)+(DATAWIDTH-1) downto (6*DATAWIDTH));
+    --alias CorrChannel7 : std_logic_vector(DATAWIDTH-1 downto 0) is WR_DATA_corrected((7*DATAWIDTH)+(DATAWIDTH-1) downto (7*DATAWIDTH));
 
 begin
 
@@ -194,8 +194,8 @@ begin
         gen_correct_blocks : for i in 0 to (NROF_DATACONN-1) generate
 
             --placed in low/LSB bits
-            A(i)(29 downto 0) <=  "00000" & "000000000000000" & '0' & '1' & CorrectBlockGain(i)(7 downto 0);     --30 bits total of which 25 LSB bits go to multiplier
-            B(i)(17 downto 0) <= zeros((16-DATAWIDTH) downto 0) & '0' & WR_DATA_in((i*DATAWIDTH)+(DATAWIDTH-1) downto (i*DATAWIDTH));   --18 bits total, 1 bit sign, 10 bits padded with 7 0s
+            A(i)(29 downto 0) <= "00000" & "000000000000000" & '0' & '1' & CorrectBlockGain(i)(7 downto 0); --30 bits total of which 25 LSB bits go to multiplier
+            B(i)(17 downto 0) <= zeros((16-DATAWIDTH) downto 0) & '0' & WR_DATA_in((i*DATAWIDTH)+(DATAWIDTH-1) downto (i*DATAWIDTH)); --18 bits total, 1 bit sign, 10 bits padded with 7 0s
             --48 bits total, 1 bit sign, 10 bits padded with 37 0s
             C(i)(47) <= CorrectBlockOffset(i)(7); --sign bit
             gen_high_c_bits: for j in (26-DATAWIDTH) to 46 generate
@@ -212,11 +212,11 @@ begin
                     --no reset
                 elsif(CLOCK'event and CLOCK = '1') then
                     if (P(i)(47) = '1') then --negative (= underflow)
-                        WR_DATA_out((i*DATAWIDTH)+(DATAWIDTH-1) downto (i*DATAWIDTH))   <= (others => '0');
+                        WR_DATA_out((i*DATAWIDTH)+(DATAWIDTH-1) downto (i*DATAWIDTH)) <= (others => '0');
                     elsif (P(i)(18) = '1') then --positive (=overflow)
-                        WR_DATA_out((i*DATAWIDTH)+(DATAWIDTH-1) downto (i*DATAWIDTH))   <= (others => '1');
+                        WR_DATA_out((i*DATAWIDTH)+(DATAWIDTH-1) downto (i*DATAWIDTH)) <= (others => '1');
                     else
-                        WR_DATA_out((i*DATAWIDTH)+(DATAWIDTH-1) downto (i*DATAWIDTH))   <= P(i)(17 downto (18-DATAWIDTH));
+                        WR_DATA_out((i*DATAWIDTH)+(DATAWIDTH-1) downto (i*DATAWIDTH)) <= P(i)(17 downto (18-DATAWIDTH));
                     end if;
                 end if;
             end process;
@@ -235,66 +235,66 @@ begin
             --Datapath (port B) should have one clk delay extra
 
 
-            gen_correct_blocks_s6: if ( C_FAMILY = "spartan6" ) generate
+            gen_correct_blocks_s6: if (C_FAMILY = "spartan6") generate
                 the_correct_block : DSP48A1
                 generic map (
-                    A0REG           =>  1,
-                    A1REG           =>  1,
-                    B0REG           =>  1,
-                    B1REG           =>  1,
-                    CARRYINREG      =>  1,
-                    CARRYINSEL      =>  "OPMODE5",
-                    CARRYOUTREG     =>  1,
-                    CREG            =>  1,
-                    DREG            =>  1,
-                    MREG            =>  1,
-                    OPMODEREG       =>  1,
-                    PREG            =>  1,
-                    RSTTYPE         =>  "SYNC"
+                    A0REG       => 1,
+                    A1REG       => 1,
+                    B0REG       => 1,
+                    B1REG       => 1,
+                    CARRYINREG  => 1,
+                    CARRYINSEL  => "OPMODE5",
+                    CARRYOUTREG => 1,
+                    CREG        => 1,
+                    DREG        => 1,
+                    MREG        => 1,
+                    OPMODEREG   => 1,
+                    PREG        => 1,
+                    RSTTYPE     => "SYNC"
                 )
                 port map (
-                    BCOUT                   => open,
-                    CARRYOUT                => open,
-                    CARRYOUTF               => open,
-                    M                       => open,
-                    P                       => P(i),
-                    PCOUT                   => open,
+                    BCOUT     => open,
+                    CARRYOUT  => open,
+                    CARRYOUTF => open,
+                    M         => open,
+                    P         => P(i),
+                    PCOUT     => open,
 
-                    A                       => A(i)(17 downto 0),
-                    B                       => B(i),
-                    C                       => C(i),
-                    CARRYIN                 => zero,
-                    CEA                     => one,
-                    CEB                     => one,
-                    CEC                     => one,
-                    CECARRYIN               => one,
-                    CED                     => one,
-                    CEM                     => one,
-                    CEOPMODE                => one,
-                    CEP                     => one,
-                    CLK                     => CLOCK,
-                    D                       => zeros(17 downto 0),
-                    OPMODE                  => X"2D",
-                    PCIN                    => zeros(47 downto 0),
-                    RSTA                    => rst_dsp,
-                    RSTB                    => rst_dsp,
-                    RSTC                    => rst_dsp,
-                    RSTCARRYIN              => rst_dsp,
-                    RSTD                    => rst_dsp,
-                    RSTM                    => rst_dsp,
-                    RSTOPMODE               => rst_dsp,
-                    RSTP                    => rst_dsp
+                    A          => A(i)(17 downto 0),
+                    B          => B(i),
+                    C          => C(i),
+                    CARRYIN    => zero,
+                    CEA        => one,
+                    CEB        => one,
+                    CEC        => one,
+                    CECARRYIN  => one,
+                    CED        => one,
+                    CEM        => one,
+                    CEOPMODE   => one,
+                    CEP        => one,
+                    CLK        => CLOCK,
+                    D          => zeros(17 downto 0),
+                    OPMODE     => X"2D",
+                    PCIN       => zeros(47 downto 0),
+                    RSTA       => rst_dsp,
+                    RSTB       => rst_dsp,
+                    RSTC       => rst_dsp,
+                    RSTCARRYIN => rst_dsp,
+                    RSTD       => rst_dsp,
+                    RSTM       => rst_dsp,
+                    RSTOPMODE  => rst_dsp,
+                    RSTP       => rst_dsp
                 );
             end generate;
 
             gen_correct_blocks_v5: if not ( C_FAMILY = "spartan6" ) generate
                 the_correct_block : DSP48E
                     generic map (
-                        ACASCREG                        => 0,               -- Number of pipeline registers between
-                                                                            -- A/ACIN input and ACOUT output, 0, 1, or 2
-                        ALUMODEREG                      => 0,               -- Number of pipeline registers on ALUMODE input, 0 or 1
-                        AREG                            => 0,               -- Number of pipeline registers on the A input, 0, 1 or 2
-                        AUTORESET_PATTERN_DETECT        => FALSE,           -- Auto-reset upon pattern detect, TRUE or FALSE
+                        ACASCREG   => 0, -- Number of pipeline registers between
+                                         -- A/ACIN input and ACOUT output, 0, 1, or 2
+                        ALUMODEREG => 0, -- Number of pipeline registers on ALUMODE input, 0 or 1
+                        AREG       => 0, -- Number of pipeline registers on the A input, 0, 1 or 2
+                        AUTORESET_PATTERN_DETECT        => FALSE, -- Auto-reset upon pattern detect, TRUE or FALSE
                         AUTORESET_PATTERN_DETECT_OPTINV => "MATCH",         -- Reset if "MATCH" or "NOMATCH"
                         A_INPUT                         => "DIRECT",        -- Selects A input used, "DIRECT" (A port) or "CASCADE" (ACIN port)
                         BCASCREG                        => 2,               -- Number of pipeline registers between B/BCIN input and BCOUT output, 0, 1, or 2
@@ -370,20 +370,20 @@ begin
         CorrectMultiplexer: process(RESET, CLOCK)
         begin
             if (RESET = '1') then
-                index   <= 3;
+                index <= 3;
 
                 --DATA_IN <= (others => '0');
 
                 for i in 0 to (NROF_DATACONN-1) loop
-                    CorrectBlockGain(i)     <= X"00";
-                    CorrectBlockOffset(i)   <= (others => '0');
+                    CorrectBlockGain(i)   <= X"00";
+                    CorrectBlockOffset(i) <= (others => '0');
                 end loop;
 
             elsif(CLOCK'event and CLOCK = '1') then
 
                 for i in 0 to (NROF_DATACONN-1) loop
-                    CorrectBlockGain(i)     <= RegArray(i+(index*NROF_DATACONN))(7 downto 0);
-                    CorrectBlockOffset(i)   <= RegArray(i+(index*NROF_DATACONN))(15 downto 8);
+                    CorrectBlockGain(i)   <= RegArray(i+(index*NROF_DATACONN))(7 downto 0);
+                    CorrectBlockOffset(i) <= RegArray(i+(index*NROF_DATACONN))(15 downto 8);
                 end loop;
 
                 --WR_DATA_remapper_r <= WR_DATA_remapper;
@@ -410,10 +410,10 @@ begin
         begin
             if (RESET = '1') then
 
-                DelayPipe          <= (others => (others => '0'));
-                WR_NEXT_out  <= '0';
-                WR_FRAME_out <= '0';
-                WR_LINE_out  <= '0';
+                DelayPipe     <= (others => (others => '0'));
+                WR_NEXT_out   <= '0';
+                WR_FRAME_out  <= '0';
+                WR_LINE_out   <= '0';
                 WR_WINDOW_out <= '0';
                 --
                 VIDEO_SYNC_OUT <= (others => '0');

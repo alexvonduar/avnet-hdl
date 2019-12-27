@@ -192,13 +192,13 @@ use unisim.vcomponents.all;
 entity onsemi_vita_cam_v3_1_S00_AXI is
     generic (
         -- Users to add parameters here
-        C_VIDEO_DATA_WIDTH             : integer              := 10;
-        C_VIDEO_DIRECT_OUTPUT          : integer              := 0;
-        --C_VIDEO_USE_SYNCGEN            : integer              := 1;
-        C_IO_VITA_DATA_WIDTH           : integer              := 4;
-        C_INCLUDE_BLC                  : integer := 0;
-        C_INCLUDE_MONITOR              : integer := 0;
-        C_FAMILY                       : string               := "zynq";
+        C_VIDEO_DATA_WIDTH    : integer := 10;
+        C_VIDEO_DIRECT_OUTPUT : integer := 0;
+        --C_VIDEO_USE_SYNCGEN : integer := 1;
+        C_IO_VITA_DATA_WIDTH  : integer := 4;
+        C_INCLUDE_BLC         : integer := 0;
+        C_INCLUDE_MONITOR     : integer := 0;
+        C_FAMILY              : string  := "zynq";
         -- User parameters ends
         -- Do not modify the parameters beyond this line
 
@@ -209,39 +209,39 @@ entity onsemi_vita_cam_v3_1_S00_AXI is
     );
     port (
         -- Users to add ports here
-        clk200                         : in  std_logic;
-        clk                            : in  std_logic;
-        reset                          : in  std_logic;
-        oe                             : in  std_logic;
+        clk200 : in std_logic;
+        clk    : in std_logic;
+        reset  : in std_logic;
+        oe     : in std_logic;
         -- I/O pins
-        io_vita_clk_pll                : out std_logic;
-        io_vita_reset_n                : out std_logic;
-        io_vita_trigger                : out std_logic_vector(2 downto 0);
-        io_vita_monitor                : in  std_logic_vector(1 downto 0);
-        io_vita_clk_out_p              : in  std_logic;
-        io_vita_clk_out_n              : in  std_logic;
-        io_vita_sync_p                 : in  std_logic;
-        io_vita_sync_n                 : in  std_logic;
-        io_vita_data_p                 : in  std_logic_vector(C_IO_VITA_DATA_WIDTH-1 downto 0);
-        io_vita_data_n                 : in  std_logic_vector(C_IO_VITA_DATA_WIDTH-1 downto 0);
+        io_vita_clk_pll   : out std_logic;
+        io_vita_reset_n   : out std_logic;
+        io_vita_trigger   : out std_logic_vector(2 downto 0);
+        io_vita_monitor   : in  std_logic_vector(1 downto 0);
+        io_vita_clk_out_p : in  std_logic;
+        io_vita_clk_out_n : in  std_logic;
+        io_vita_sync_p    : in  std_logic;
+        io_vita_sync_n    : in  std_logic;
+        io_vita_data_p    : in  std_logic_vector(C_IO_VITA_DATA_WIDTH-1 downto 0);
+        io_vita_data_n    : in  std_logic_vector(C_IO_VITA_DATA_WIDTH-1 downto 0);
         -- Trigger Port
-        trigger1                       : in  std_logic;
+        trigger1 : in  std_logic;
         -- Frame Sync Port
-        fsync                          : out std_logic;
+        fsync : out std_logic;
         -- Video Port
-        video_vsync                    : out  std_logic;
-        video_hsync                    : out  std_logic;
-        video_vblank                   : out  std_logic;
-        video_hblank                   : out  std_logic;
-        video_active_video             : out  std_logic;
-        video_data                     : out  std_logic_vector((C_VIDEO_DATA_WIDTH-1) downto 0);
+        video_vsync        : out std_logic;
+        video_hsync        : out std_logic;
+        video_vblank       : out std_logic;
+        video_hblank       : out std_logic;
+        video_active_video : out std_logic;
+        video_data         : out std_logic_vector((C_VIDEO_DATA_WIDTH-1) downto 0);
         -- Debug Ports
-        debug_iserdes_o                : out std_logic_vector(229 downto 0);
-        debug_decoder_o                : out std_logic_vector(186 downto 0);
-        debug_crc_o                    : out std_logic_vector( 87 downto 0);
-        debug_triggen_o                : out std_logic_vector(  9 downto 0);
-        debug_syncgen_o                : out std_logic_vector( 37 downto 0);
-        debug_video_o                  : out std_logic_vector( 31 downto 0);
+        debug_iserdes_o : out std_logic_vector(229 downto 0);
+        debug_decoder_o : out std_logic_vector(186 downto 0);
+        debug_crc_o     : out std_logic_vector( 87 downto 0);
+        debug_triggen_o : out std_logic_vector(  9 downto 0);
+        debug_syncgen_o : out std_logic_vector( 37 downto 0);
+        debug_video_o   : out std_logic_vector( 31 downto 0);
         -- User ports ends
         -- Do not modify the ports beyond this line
 
@@ -311,23 +311,23 @@ end onsemi_vita_cam_v3_1_S00_AXI;
 architecture arch_imp of onsemi_vita_cam_v3_1_S00_AXI is
 
     -- AXI4LITE signals
-    signal axi_awaddr : std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
+    signal axi_awaddr  : std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
     signal axi_awready : std_logic;
-    signal axi_wready : std_logic;
-    signal axi_bresp : std_logic_vector(1 downto 0);
-    signal axi_bvalid : std_logic;
-    signal axi_araddr : std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
+    signal axi_wready  : std_logic;
+    signal axi_bresp   : std_logic_vector(1 downto 0);
+    signal axi_bvalid  : std_logic;
+    signal axi_araddr  : std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
     signal axi_arready : std_logic;
-    signal axi_rdata : std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-    signal axi_rresp : std_logic_vector(1 downto 0);
-    signal axi_rvalid : std_logic;
+    signal axi_rdata   : std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+    signal axi_rresp   : std_logic_vector(1 downto 0);
+    signal axi_rvalid  : std_logic;
 
     -- Example-specific design signals
     -- local parameter for addressing 32 bit / 64 bit C_S_AXI_DATA_WIDTH
     -- ADDR_LSB is used for addressing 32/64 bit registers/memories
     -- ADDR_LSB = 2 for 32 bits (n downto 2)
     -- ADDR_LSB = 3 for 64 bits (n downto 3)
-    constant ADDR_LSB  : integer := (C_S_AXI_DATA_WIDTH/32)+ 1;
+    constant ADDR_LSB : integer := (C_S_AXI_DATA_WIDTH/32)+ 1;
     constant OPT_MEM_ADDR_BITS : integer := 5;
     ------------------------------------------------
     ---- Signals for user logic register space example
@@ -430,232 +430,232 @@ architecture arch_imp of onsemi_vita_cam_v3_1_S00_AXI is
     ------------------------------------------
     -- HOST Interface - ISERDES
     ------------------------------------------
-    signal host_iserdes_reset             : std_logic;
-    signal host_iserdes_auto_align        : std_logic;
-    signal host_iserdes_align_start       : std_logic;
-    signal host_iserdes_fifo_enable       : std_logic;
-    signal host_iserdes_manual_tap        : std_logic_vector(9 downto 0);
-    signal host_iserdes_training          : std_logic_vector(9 downto 0);
+    signal host_iserdes_reset       : std_logic;
+    signal host_iserdes_auto_align  : std_logic;
+    signal host_iserdes_align_start : std_logic;
+    signal host_iserdes_fifo_enable : std_logic;
+    signal host_iserdes_manual_tap  : std_logic_vector(9 downto 0);
+    signal host_iserdes_training    : std_logic_vector(9 downto 0);
     --
-    signal host_iserdes_clk_ready         : std_logic;
-    signal host_iserdes_clk_status        : std_logic_vector(15 downto 0);
-    signal host_iserdes_align_busy        : std_logic;
-    signal host_iserdes_aligned           : std_logic;
+    signal host_iserdes_clk_ready  : std_logic;
+    signal host_iserdes_clk_status : std_logic_vector(15 downto 0);
+    signal host_iserdes_align_busy : std_logic;
+    signal host_iserdes_aligned    : std_logic;
 
     ------------------------------------------
     -- HOST Interface - Sync Channel Decoder
     ------------------------------------------
-    signal host_decoder_reset             : std_logic;
-    signal host_decoder_enable            : std_logic;
-    signal host_decoder_startoddeven      : std_logic_vector(31 downto 0);
-    signal host_decoder_code_ls           : std_logic_vector(9 downto 0);
-    signal host_decoder_code_le           : std_logic_vector(9 downto 0);
-    signal host_decoder_code_fs           : std_logic_vector(9 downto 0);
-    signal host_decoder_code_fe           : std_logic_vector(9 downto 0);
-    signal host_decoder_code_bl           : std_logic_vector(9 downto 0);
-    signal host_decoder_code_img          : std_logic_vector(9 downto 0);
-    signal host_decoder_code_tr           : std_logic_vector(9 downto 0);
-    signal host_decoder_code_crc          : std_logic_vector(9 downto 0);
-    signal host_decoder_frame_start       : std_logic;
-    signal host_decoder_cnt_black_lines   : std_logic_vector(31 downto 0);
-    signal host_decoder_cnt_image_lines   : std_logic_vector(31 downto 0);
-    signal host_decoder_cnt_black_pixels  : std_logic_vector(31 downto 0);
-    signal host_decoder_cnt_image_pixels  : std_logic_vector(31 downto 0);
-    signal host_decoder_cnt_frames        : std_logic_vector(31 downto 0);
-    signal host_decoder_cnt_windows       : std_logic_vector(31 downto 0);
-    signal host_decoder_cnt_clocks        : std_logic_vector(31 downto 0);
-    signal host_decoder_cnt_start_lines   : std_logic_vector(31 downto 0);
-    signal host_decoder_cnt_end_lines     : std_logic_vector(31 downto 0);
-    signal host_decoder_cnt_monitor0high  : std_logic_vector(31 downto 0);
-    signal host_decoder_cnt_monitor0low   : std_logic_vector(31 downto 0);
-    signal host_decoder_cnt_monitor1high  : std_logic_vector(31 downto 0);
-    signal host_decoder_cnt_monitor1low   : std_logic_vector(31 downto 0);
+    signal host_decoder_reset            : std_logic;
+    signal host_decoder_enable           : std_logic;
+    signal host_decoder_startoddeven     : std_logic_vector(31 downto 0);
+    signal host_decoder_code_ls          : std_logic_vector(9 downto 0);
+    signal host_decoder_code_le          : std_logic_vector(9 downto 0);
+    signal host_decoder_code_fs          : std_logic_vector(9 downto 0);
+    signal host_decoder_code_fe          : std_logic_vector(9 downto 0);
+    signal host_decoder_code_bl          : std_logic_vector(9 downto 0);
+    signal host_decoder_code_img         : std_logic_vector(9 downto 0);
+    signal host_decoder_code_tr          : std_logic_vector(9 downto 0);
+    signal host_decoder_code_crc         : std_logic_vector(9 downto 0);
+    signal host_decoder_frame_start      : std_logic;
+    signal host_decoder_cnt_black_lines  : std_logic_vector(31 downto 0);
+    signal host_decoder_cnt_image_lines  : std_logic_vector(31 downto 0);
+    signal host_decoder_cnt_black_pixels : std_logic_vector(31 downto 0);
+    signal host_decoder_cnt_image_pixels : std_logic_vector(31 downto 0);
+    signal host_decoder_cnt_frames       : std_logic_vector(31 downto 0);
+    signal host_decoder_cnt_windows      : std_logic_vector(31 downto 0);
+    signal host_decoder_cnt_clocks       : std_logic_vector(31 downto 0);
+    signal host_decoder_cnt_start_lines  : std_logic_vector(31 downto 0);
+    signal host_decoder_cnt_end_lines    : std_logic_vector(31 downto 0);
+    signal host_decoder_cnt_monitor0high : std_logic_vector(31 downto 0);
+    signal host_decoder_cnt_monitor0low  : std_logic_vector(31 downto 0);
+    signal host_decoder_cnt_monitor1high : std_logic_vector(31 downto 0);
+    signal host_decoder_cnt_monitor1low  : std_logic_vector(31 downto 0);
 
     ------------------------------------------
     -- HOST Interface - CRC Checker
     ------------------------------------------
-    signal host_crc_reset                 : std_logic;
-    signal host_crc_initvalue             : std_logic;
-    signal host_crc_status                : std_logic_vector(31 downto 0);
+    signal host_crc_reset     : std_logic;
+    signal host_crc_initvalue : std_logic;
+    signal host_crc_status    : std_logic_vector(31 downto 0);
 
     ------------------------------------------
     -- HOST Interface - Data Channel Remapper
     ------------------------------------------
-    signal host_remapper_write_cfg        : std_logic_vector(2 downto 0);
-    signal host_remapper_mode             : std_logic_vector(2 downto 0);
+    signal host_remapper_write_cfg : std_logic_vector(2 downto 0);
+    signal host_remapper_mode      : std_logic_vector(2 downto 0);
 
     ------------------------------------------
     -- HOST Interface - Trigger Generator
     ------------------------------------------
-    signal host_triggen_enable            : std_logic_vector(2 downto 0);
-    signal host_triggen_sync2readout      : std_logic_vector(2 downto 0);
-    signal host_triggen_readouttrigger    : std_logic;
-    signal host_triggen_default_freq      : std_logic_vector(31 downto 0);
-    signal host_triggen_cnt_trigger0high  : std_logic_vector(31 downto 0);
-    signal host_triggen_cnt_trigger0low   : std_logic_vector(31 downto 0);
-    signal host_triggen_cnt_trigger1high  : std_logic_vector(31 downto 0);
-    signal host_triggen_cnt_trigger1low   : std_logic_vector(31 downto 0);
-    signal host_triggen_cnt_trigger2high  : std_logic_vector(31 downto 0);
-    signal host_triggen_cnt_trigger2low   : std_logic_vector(31 downto 0);
-    signal host_triggen_ext_debounce      : std_logic_vector(31 downto 0);
-    signal host_triggen_ext_polarity      : std_logic;
-    signal host_triggen_cnt_update        : std_logic;
-    signal host_triggen_gen_polarity      : std_logic_vector(2 downto 0);
+    signal host_triggen_enable           : std_logic_vector(2 downto 0);
+    signal host_triggen_sync2readout     : std_logic_vector(2 downto 0);
+    signal host_triggen_readouttrigger   : std_logic;
+    signal host_triggen_default_freq     : std_logic_vector(31 downto 0);
+    signal host_triggen_cnt_trigger0high : std_logic_vector(31 downto 0);
+    signal host_triggen_cnt_trigger0low  : std_logic_vector(31 downto 0);
+    signal host_triggen_cnt_trigger1high : std_logic_vector(31 downto 0);
+    signal host_triggen_cnt_trigger1low  : std_logic_vector(31 downto 0);
+    signal host_triggen_cnt_trigger2high : std_logic_vector(31 downto 0);
+    signal host_triggen_cnt_trigger2low  : std_logic_vector(31 downto 0);
+    signal host_triggen_ext_debounce     : std_logic_vector(31 downto 0);
+    signal host_triggen_ext_polarity     : std_logic;
+    signal host_triggen_cnt_update       : std_logic;
+    signal host_triggen_gen_polarity     : std_logic_vector(2 downto 0);
 
     ------------------------------------------
     -- HOST Interface - FPN/PRNU Correction
     ------------------------------------------
-    signal host_fpn_prnu_values           : std_logic_vector((16*16)-1 downto 0);
+    signal host_fpn_prnu_values : std_logic_vector((16*16)-1 downto 0);
 
     ------------------------------------------
     -- HOST Interface - Sync Generator
     ------------------------------------------
-    signal host_syncgen_delay             : std_logic_vector(15 downto 0);
-    signal host_syncgen_hactive           : std_logic_vector(15 downto 0);
-    signal host_syncgen_hfporch           : std_logic_vector(15 downto 0);
-    signal host_syncgen_hsync             : std_logic_vector(15 downto 0);
-    signal host_syncgen_hbporch           : std_logic_vector(15 downto 0);
-    signal host_syncgen_vactive           : std_logic_vector(15 downto 0);
-    signal host_syncgen_vfporch           : std_logic_vector(15 downto 0);
-    signal host_syncgen_vsync             : std_logic_vector(15 downto 0);
-    signal host_syncgen_vbporch           : std_logic_vector(15 downto 0);
+    signal host_syncgen_delay   : std_logic_vector(15 downto 0);
+    signal host_syncgen_hactive : std_logic_vector(15 downto 0);
+    signal host_syncgen_hfporch : std_logic_vector(15 downto 0);
+    signal host_syncgen_hsync   : std_logic_vector(15 downto 0);
+    signal host_syncgen_hbporch : std_logic_vector(15 downto 0);
+    signal host_syncgen_vactive : std_logic_vector(15 downto 0);
+    signal host_syncgen_vfporch : std_logic_vector(15 downto 0);
+    signal host_syncgen_vsync   : std_logic_vector(15 downto 0);
+    signal host_syncgen_vbporch : std_logic_vector(15 downto 0);
 
     ------------------------------------------
     -- Clock Divide by 4 logic
     ------------------------------------------
 
-    constant zero            : std_logic := '0';
-    constant one             : std_logic := '1';
+    constant zero : std_logic := '0';
+    constant one  : std_logic := '1';
 
-    signal vita_clk          : std_logic;
-    signal vita_clk4x        : std_logic;
+    signal vita_clk   : std_logic;
+    signal vita_clk4x : std_logic;
 
     ------------------------------------------
     -- VITA Camera Receiver Core Logic
     ------------------------------------------
 
-    constant CORE_VERSION                 : std_logic_vector(31 downto 0) := X"03030000"; -- 3.3.0
-    constant CORE_ID                      : std_logic_vector(31 downto 0) := X"4F4E5643"; -- ASCII for "ONVC"
+    constant CORE_VERSION : std_logic_vector(31 downto 0) := X"03030000"; -- 3.3.0
+    constant CORE_ID      : std_logic_vector(31 downto 0) := X"4F4E5643"; -- ASCII for "ONVC"
 
     component onsemi_vita_cam_core is
         Generic
         (
-            C_VIDEO_DATA_WIDTH             : integer := 10;
-            C_VIDEO_DIRECT_OUTPUT          : integer := 0;
-            --C_VIDEO_USE_SYNCGEN            : integer := 1;
-            C_IO_VITA_DATA_WIDTH           : integer := 4;
-            C_INCLUDE_BLC                  : integer := 0;
-            C_INCLUDE_MONITOR              : integer := 0;
-            C_FAMILY                       : string  := "zynq"
+            C_VIDEO_DATA_WIDTH    : integer := 10;
+            C_VIDEO_DIRECT_OUTPUT : integer := 0;
+            --C_VIDEO_USE_SYNCGEN : integer := 1;
+            C_IO_VITA_DATA_WIDTH  : integer := 4;
+            C_INCLUDE_BLC         : integer := 0;
+            C_INCLUDE_MONITOR     : integer := 0;
+            C_FAMILY              : string  := "zynq"
         );
         Port
         (
-            clk200                         : in  std_logic;
-            clk                            : in  std_logic;
-            clk4x                          : in  std_logic;
-            reset                          : in  std_logic;
-            oe                             : in  std_logic;
+            clk200 : in std_logic;
+            clk    : in std_logic;
+            clk4x  : in std_logic;
+            reset  : in std_logic;
+            oe     : in std_logic;
             -- HOST Interface - VITA
-            host_vita_reset                : in  std_logic;
+            host_vita_reset : in std_logic;
             -- HOST Interface - ISERDES
-            host_iserdes_reset             : in  std_logic;
-            host_iserdes_auto_align        : in  std_logic;
-            host_iserdes_align_start       : in  std_logic;
-            host_iserdes_fifo_enable       : in  std_logic;
-            host_iserdes_manual_tap        : in  std_logic_vector(9 downto 0);
-            host_iserdes_training          : in  std_logic_vector(9 downto 0);
-            host_iserdes_clk_ready         : out std_logic;
-            host_iserdes_clk_status        : out std_logic_vector(15 downto 0);
-            host_iserdes_align_busy        : out std_logic;
-            host_iserdes_aligned           : out std_logic;
+            host_iserdes_reset       : in  std_logic;
+            host_iserdes_auto_align  : in  std_logic;
+            host_iserdes_align_start : in  std_logic;
+            host_iserdes_fifo_enable : in  std_logic;
+            host_iserdes_manual_tap  : in  std_logic_vector(9 downto 0);
+            host_iserdes_training    : in  std_logic_vector(9 downto 0);
+            host_iserdes_clk_ready   : out std_logic;
+            host_iserdes_clk_status  : out std_logic_vector(15 downto 0);
+            host_iserdes_align_busy  : out std_logic;
+            host_iserdes_aligned     : out std_logic;
             -- HOST Interface - Sync Channel Decoder
-            host_decoder_reset             : in  std_logic;
-            host_decoder_enable            : in  std_logic;
-            host_decoder_startoddeven      : in  std_logic_vector(31 downto 0);
-            host_decoder_code_ls           : in  std_logic_vector(9 downto 0);
-            host_decoder_code_le           : in  std_logic_vector(9 downto 0);
-            host_decoder_code_fs           : in  std_logic_vector(9 downto 0);
-            host_decoder_code_fe           : in  std_logic_vector(9 downto 0);
-            host_decoder_code_bl           : in  std_logic_vector(9 downto 0);
-            host_decoder_code_img          : in  std_logic_vector(9 downto 0);
-            host_decoder_code_tr           : in  std_logic_vector(9 downto 0);
-            host_decoder_code_crc          : in  std_logic_vector(9 downto 0);
-            host_decoder_frame_start       : out std_logic;
-            host_decoder_cnt_black_lines   : out std_logic_vector(31 downto 0);
-            host_decoder_cnt_image_lines   : out std_logic_vector(31 downto 0);
-            host_decoder_cnt_black_pixels  : out std_logic_vector(31 downto 0);
-            host_decoder_cnt_image_pixels  : out std_logic_vector(31 downto 0);
-            host_decoder_cnt_frames        : out std_logic_vector(31 downto 0);
-            host_decoder_cnt_windows       : out std_logic_vector(31 downto 0);
-            host_decoder_cnt_clocks        : out std_logic_vector(31 downto 0);
-            host_decoder_cnt_start_lines   : out std_logic_vector(31 downto 0);
-            host_decoder_cnt_end_lines     : out std_logic_vector(31 downto 0);
-            host_decoder_cnt_monitor0high  : out std_logic_vector(31 downto 0);
-            host_decoder_cnt_monitor0low   : out std_logic_vector(31 downto 0);
-            host_decoder_cnt_monitor1high  : out std_logic_vector(31 downto 0);
-            host_decoder_cnt_monitor1low   : out std_logic_vector(31 downto 0);
+            host_decoder_reset            : in  std_logic;
+            host_decoder_enable           : in  std_logic;
+            host_decoder_startoddeven     : in  std_logic_vector(31 downto 0);
+            host_decoder_code_ls          : in  std_logic_vector(9 downto 0);
+            host_decoder_code_le          : in  std_logic_vector(9 downto 0);
+            host_decoder_code_fs          : in  std_logic_vector(9 downto 0);
+            host_decoder_code_fe          : in  std_logic_vector(9 downto 0);
+            host_decoder_code_bl          : in  std_logic_vector(9 downto 0);
+            host_decoder_code_img         : in  std_logic_vector(9 downto 0);
+            host_decoder_code_tr          : in  std_logic_vector(9 downto 0);
+            host_decoder_code_crc         : in  std_logic_vector(9 downto 0);
+            host_decoder_frame_start      : out std_logic;
+            host_decoder_cnt_black_lines  : out std_logic_vector(31 downto 0);
+            host_decoder_cnt_image_lines  : out std_logic_vector(31 downto 0);
+            host_decoder_cnt_black_pixels : out std_logic_vector(31 downto 0);
+            host_decoder_cnt_image_pixels : out std_logic_vector(31 downto 0);
+            host_decoder_cnt_frames       : out std_logic_vector(31 downto 0);
+            host_decoder_cnt_windows      : out std_logic_vector(31 downto 0);
+            host_decoder_cnt_clocks       : out std_logic_vector(31 downto 0);
+            host_decoder_cnt_start_lines  : out std_logic_vector(31 downto 0);
+            host_decoder_cnt_end_lines    : out std_logic_vector(31 downto 0);
+            host_decoder_cnt_monitor0high : out std_logic_vector(31 downto 0);
+            host_decoder_cnt_monitor0low  : out std_logic_vector(31 downto 0);
+            host_decoder_cnt_monitor1high : out std_logic_vector(31 downto 0);
+            host_decoder_cnt_monitor1low  : out std_logic_vector(31 downto 0);
             -- HOST Interface - CRC Checker
-            host_crc_reset                 : in  std_logic;
-            host_crc_initvalue             : in  std_logic;
-            host_crc_status                : out std_logic_vector(31 downto 0);
+            host_crc_reset     : in  std_logic;
+            host_crc_initvalue : in  std_logic;
+            host_crc_status    : out std_logic_vector(31 downto 0);
             -- HOST Interface - Data Channel Remapper
-            host_remapper_write_cfg        : in  std_logic_vector(2 downto 0);
-            host_remapper_mode             : in  std_logic_vector(2 downto 0);
+            host_remapper_write_cfg : in std_logic_vector(2 downto 0);
+            host_remapper_mode      : in std_logic_vector(2 downto 0);
             -- HOST Interface - Trigger Generator
-            host_triggen_enable            : in  std_logic_vector(2 downto 0);
-            host_triggen_sync2readout      : in  std_logic_vector(2 downto 0);
-            host_triggen_readouttrigger    : in  std_logic;
-            host_triggen_default_freq      : in  std_logic_vector(31 downto 0);
-            host_triggen_cnt_trigger0high  : in  std_logic_vector(31 downto 0);
-            host_triggen_cnt_trigger0low   : in  std_logic_vector(31 downto 0);
-            host_triggen_cnt_trigger1high  : in  std_logic_vector(31 downto 0);
-            host_triggen_cnt_trigger1low   : in  std_logic_vector(31 downto 0);
-            host_triggen_cnt_trigger2high  : in  std_logic_vector(31 downto 0);
-            host_triggen_cnt_trigger2low   : in  std_logic_vector(31 downto 0);
-            host_triggen_ext_debounce      : in  std_logic_vector(31 downto 0);
-            host_triggen_ext_polarity      : in  std_logic;
-            host_triggen_gen_polarity      : in  std_logic_vector(2 downto 0);
+            host_triggen_enable           : in std_logic_vector(2 downto 0);
+            host_triggen_sync2readout     : in std_logic_vector(2 downto 0);
+            host_triggen_readouttrigger   : in std_logic;
+            host_triggen_default_freq     : in std_logic_vector(31 downto 0);
+            host_triggen_cnt_trigger0high : in std_logic_vector(31 downto 0);
+            host_triggen_cnt_trigger0low  : in std_logic_vector(31 downto 0);
+            host_triggen_cnt_trigger1high : in std_logic_vector(31 downto 0);
+            host_triggen_cnt_trigger1low  : in std_logic_vector(31 downto 0);
+            host_triggen_cnt_trigger2high : in std_logic_vector(31 downto 0);
+            host_triggen_cnt_trigger2low  : in std_logic_vector(31 downto 0);
+            host_triggen_ext_debounce     : in std_logic_vector(31 downto 0);
+            host_triggen_ext_polarity     : in std_logic;
+            host_triggen_gen_polarity     : in std_logic_vector(2 downto 0);
             -- HOST Interface - FPN/PRNU Correction
-            host_fpn_prnu_values           : in  std_logic_vector((16*16)-1 downto 0);
+            host_fpn_prnu_values : in std_logic_vector((16*16)-1 downto 0);
             -- HOST Interface - Sync Generator
-            host_syncgen_delay             : in  std_logic_vector(15 downto 0);
-            host_syncgen_hactive           : in  std_logic_vector(15 downto 0);
-            host_syncgen_hfporch           : in  std_logic_vector(15 downto 0);
-            host_syncgen_hsync             : in  std_logic_vector(15 downto 0);
-            host_syncgen_hbporch           : in  std_logic_vector(15 downto 0);
-            host_syncgen_vactive           : in  std_logic_vector(15 downto 0);
-            host_syncgen_vfporch           : in  std_logic_vector(15 downto 0);
-            host_syncgen_vsync             : in  std_logic_vector(15 downto 0);
-            host_syncgen_vbporch           : in  std_logic_vector(15 downto 0);
+            host_syncgen_delay   : in std_logic_vector(15 downto 0);
+            host_syncgen_hactive : in std_logic_vector(15 downto 0);
+            host_syncgen_hfporch : in std_logic_vector(15 downto 0);
+            host_syncgen_hsync   : in std_logic_vector(15 downto 0);
+            host_syncgen_hbporch : in std_logic_vector(15 downto 0);
+            host_syncgen_vactive : in std_logic_vector(15 downto 0);
+            host_syncgen_vfporch : in std_logic_vector(15 downto 0);
+            host_syncgen_vsync   : in std_logic_vector(15 downto 0);
+            host_syncgen_vbporch : in std_logic_vector(15 downto 0);
             -- I/O pins
-            io_vita_clk_pll                : out std_logic;
-            io_vita_reset_n                : out std_logic;
-            io_vita_trigger                : out std_logic_vector(2 downto 0);
-            io_vita_monitor                : in  std_logic_vector(1 downto 0);
-            io_vita_clk_out_p              : in  std_logic;
-            io_vita_clk_out_n              : in  std_logic;
-            io_vita_sync_p                 : in  std_logic;
-            io_vita_sync_n                 : in  std_logic;
-            io_vita_data_p                 : in  std_logic_vector(C_IO_VITA_DATA_WIDTH-1 downto 0);
-            io_vita_data_n                 : in  std_logic_vector(C_IO_VITA_DATA_WIDTH-1 downto 0);
+            io_vita_clk_pll   : out std_logic;
+            io_vita_reset_n   : out std_logic;
+            io_vita_trigger   : out std_logic_vector(2 downto 0);
+            io_vita_monitor   : in  std_logic_vector(1 downto 0);
+            io_vita_clk_out_p : in  std_logic;
+            io_vita_clk_out_n : in  std_logic;
+            io_vita_sync_p    : in  std_logic;
+            io_vita_sync_n    : in  std_logic;
+            io_vita_data_p    : in  std_logic_vector(C_IO_VITA_DATA_WIDTH-1 downto 0);
+            io_vita_data_n    : in  std_logic_vector(C_IO_VITA_DATA_WIDTH-1 downto 0);
             -- Trigger Port
-            trigger1                       : in  std_logic;
+            trigger1 : in std_logic;
             -- Frame Sync Port
-            fsync                          : out std_logic;
+            fsync : out std_logic;
             -- Video Port
-            video_vsync_o                  : out  std_logic;
-            video_hsync_o                  : out  std_logic;
-            video_vblank_o                 : out  std_logic;
-            video_hblank_o                 : out  std_logic;
-            video_active_video_o           : out  std_logic;
-            video_data_o                   : out  std_logic_vector((C_VIDEO_DATA_WIDTH-1) downto 0);
+            video_vsync_o        : out std_logic;
+            video_hsync_o        : out std_logic;
+            video_vblank_o       : out std_logic;
+            video_hblank_o       : out std_logic;
+            video_active_video_o : out std_logic;
+            video_data_o         : out std_logic_vector((C_VIDEO_DATA_WIDTH-1) downto 0);
             -- Debug Ports
-            debug_iserdes_o                : out std_logic_vector(229 downto 0);
-            debug_decoder_o                : out std_logic_vector(186 downto 0);
-            debug_crc_o                    : out std_logic_vector( 87 downto 0);
-            debug_triggen_o                : out std_logic_vector(  9 downto 0);
-            debug_syncgen_o                : out std_logic_vector( 37 downto 0);
-            debug_video_o                  : out std_logic_vector( 31 downto 0)
+            debug_iserdes_o : out std_logic_vector(229 downto 0);
+            debug_decoder_o : out std_logic_vector(186 downto 0);
+            debug_crc_o     : out std_logic_vector( 87 downto 0);
+            debug_triggen_o : out std_logic_vector(  9 downto 0);
+            debug_syncgen_o : out std_logic_vector( 37 downto 0);
+            debug_video_o   : out std_logic_vector( 31 downto 0)
         );
     end component onsemi_vita_cam_core;
 
@@ -663,13 +663,13 @@ begin
     -- I/O Connections assignments
 
     S_AXI_AWREADY <= axi_awready;
-    S_AXI_WREADY <= axi_wready;
-    S_AXI_BRESP <= axi_bresp;
-    S_AXI_BVALID <= axi_bvalid;
+    S_AXI_WREADY  <= axi_wready;
+    S_AXI_BRESP   <= axi_bresp;
+    S_AXI_BVALID  <= axi_bvalid;
     S_AXI_ARREADY <= axi_arready;
-    S_AXI_RDATA <= axi_rdata;
-    S_AXI_RRESP <= axi_rresp;
-    S_AXI_RVALID <= axi_rvalid;
+    S_AXI_RDATA   <= axi_rdata;
+    S_AXI_RRESP   <= axi_rresp;
+    S_AXI_RVALID  <= axi_rvalid;
     -- Implement axi_awready generation
     -- axi_awready is asserted for one S_AXI_ACLK clock cycle when both
     -- S_AXI_AWVALID and S_AXI_WVALID are asserted. axi_awready is
@@ -751,13 +751,13 @@ begin
         if rising_edge(S_AXI_ACLK) then
             if S_AXI_ARESETN = '0' then
                 --
-                slv_reg3 <= (others => '0');
-                slv_reg4 <= (others => '0');
-                slv_reg5 <= (others => '0');
-                slv_reg6 <= (others => '0');
-                slv_reg7 <= (others => '0');
-                slv_reg8 <= (others => '0');
-                slv_reg9 <= (others => '0');
+                slv_reg3  <= (others => '0');
+                slv_reg4  <= (others => '0');
+                slv_reg5  <= (others => '0');
+                slv_reg6  <= (others => '0');
+                slv_reg7  <= (others => '0');
+                slv_reg8  <= (others => '0');
+                slv_reg9  <= (others => '0');
                 slv_reg10 <= (others => '0');
                 slv_reg11 <= (others => '0');
                 slv_reg12 <= (others => '0');
@@ -1140,13 +1140,13 @@ begin
                                 end if;
                             end loop;
                         when others =>
-                            slv_reg3 <= slv_reg3;
-                            slv_reg4 <= slv_reg4;
-                            slv_reg5 <= slv_reg5;
-                            slv_reg6 <= slv_reg6;
-                            slv_reg7 <= slv_reg7;
-                            slv_reg8 <= slv_reg8;
-                            slv_reg9 <= slv_reg9;
+                            slv_reg3  <= slv_reg3;
+                            slv_reg4  <= slv_reg4;
+                            slv_reg5  <= slv_reg5;
+                            slv_reg6  <= slv_reg6;
+                            slv_reg7  <= slv_reg7;
+                            slv_reg8  <= slv_reg8;
+                            slv_reg9  <= slv_reg9;
                             slv_reg10 <= slv_reg10;
                             slv_reg11 <= slv_reg11;
                             slv_reg12 <= slv_reg12;
@@ -1310,14 +1310,14 @@ begin
     begin
         if rising_edge(S_AXI_ACLK) then
             if S_AXI_ARESETN = '0' then
-                axi_bvalid  <= '0';
-                axi_bresp   <= "00"; --need to work more on the responses
+                axi_bvalid <= '0';
+                axi_bresp  <= "00"; --need to work more on the responses
             else
-                if (axi_awready = '1' and S_AXI_AWVALID = '1' and axi_wready = '1' and S_AXI_WVALID = '1' and axi_bvalid = '0'  ) then
+                if (axi_awready = '1' and S_AXI_AWVALID = '1' and axi_wready = '1' and S_AXI_WVALID = '1' and axi_bvalid = '0') then
                     axi_bvalid <= '1';
                     axi_bresp  <= "00";
-                elsif (S_AXI_BREADY = '1' and axi_bvalid = '1') then   --check if bready is asserted while bvalid is high)
-                    axi_bvalid <= '0';                                 -- (there is a possibility that bready is always asserted high)
+                elsif (S_AXI_BREADY = '1' and axi_bvalid = '1') then --check if bready is asserted while bvalid is high)
+                    axi_bvalid <= '0'; -- (there is a possibility that bready is always asserted high)
                 end if;
             end if;
         end if;
@@ -1528,7 +1528,7 @@ begin
     begin
         if (rising_edge (S_AXI_ACLK)) then
             if ( S_AXI_ARESETN = '0' ) then
-                axi_rdata  <= (others => '0');
+                axi_rdata <= (others => '0');
             else
                 if (slv_reg_rden = '1') then
                     -- When there is a valid read address (S_AXI_ARVALID) with
@@ -1552,7 +1552,7 @@ begin
     begin
         if rising_edge(S_AXI_ACLK) then
             if S_AXI_ARESETN = '0' then
-                host_vita_reset        <= '0';
+                host_vita_reset <= '0';
                 --
                 slv_reg3_r1 <= (others => '0');
             else
@@ -1560,7 +1560,7 @@ begin
 
                 -- 0x0C - VITA_CONTROL
                 --           [ 0] VITA_RESET
-                host_vita_reset        <= slv_reg3(0);
+                host_vita_reset <= slv_reg3(0);
                 slv_reg3_r1 <= "00000000" &
                             "00000000" &
                             "00000000" &
@@ -1598,10 +1598,10 @@ begin
             --           [10] ISERDES_ALIGNED
             --        [23:16] ISERDES_TXCLK_STATUS
             --        [31:24] ISERDES_RXCLK_STATUS
-    host_iserdes_reset           <= slv_reg4(0);
-    host_iserdes_auto_align      <= slv_reg4(1);
-    host_iserdes_align_start     <= slv_reg4(2);
-    host_iserdes_fifo_enable     <= slv_reg4(3);
+    host_iserdes_reset       <= slv_reg4(0);
+    host_iserdes_auto_align  <= slv_reg4(1);
+    host_iserdes_align_start <= slv_reg4(2);
+    host_iserdes_fifo_enable <= slv_reg4(3);
     slv_reg4_r1 <= host_iserdes_clk_status & "00000" &
         host_iserdes_aligned &
         host_iserdes_align_busy &
@@ -1613,11 +1613,11 @@ begin
 
     --
     -- 0x14 - ISERDES_TRAINING
-    host_iserdes_training        <= slv_reg5(9 downto 0);
+    host_iserdes_training <= slv_reg5(9 downto 0);
 
     --
     -- 0x18 - ISERDES_MANUAL_TAP
-    host_iserdes_manual_tap      <= slv_reg6(9 downto 0);
+    host_iserdes_manual_tap <= slv_reg6(9 downto 0);
 
 --         end if;
 --      end if;
@@ -1648,31 +1648,31 @@ begin
     -- 0x20 - DECODER_CONTROL[7:0]
     --           [0] DECODER_RESET
     --           [1] DECODER_ENABLE
-    host_decoder_reset           <= slv_reg8(0);
-    host_decoder_enable          <= slv_reg8(1);
+    host_decoder_reset  <= slv_reg8(0);
+    host_decoder_enable <= slv_reg8(1);
 
     --
     -- 0x24 - DECODER_STARTODDEVEN
-    host_decoder_startoddeven    <= slv_reg9;
+    host_decoder_startoddeven <= slv_reg9;
 
     --
     -- 0x28 - DECODER_CODES_LS_LE
-    host_decoder_code_ls         <= slv_reg10( 9 downto  0);
-    host_decoder_code_le         <= slv_reg10(25 downto 16);
+    host_decoder_code_ls <= slv_reg10( 9 downto  0);
+    host_decoder_code_le <= slv_reg10(25 downto 16);
 
     --
     -- 0x2C - DECODER_CODES_FS_FE
-    host_decoder_code_fs         <= slv_reg11( 9 downto  0);
-    host_decoder_code_fe         <= slv_reg11(25 downto 16);
+    host_decoder_code_fs <= slv_reg11( 9 downto  0);
+    host_decoder_code_fe <= slv_reg11(25 downto 16);
 
     --
     -- 0x30 - DECODER_CODES_BL_IMG
-    host_decoder_code_bl         <= slv_reg12( 9 downto  0);
-    host_decoder_code_img        <= slv_reg12(25 downto 16);
+    host_decoder_code_bl  <= slv_reg12( 9 downto  0);
+    host_decoder_code_img <= slv_reg12(25 downto 16);
 
     -- 0x34 - DECODER_CODES_TR_CRC
-    host_decoder_code_tr         <= slv_reg13( 9 downto  0);
-    host_decoder_code_crc        <= slv_reg13(25 downto 16);
+    host_decoder_code_tr  <= slv_reg13( 9 downto  0);
+    host_decoder_code_crc <= slv_reg13(25 downto 16);
 
 
     --
@@ -1780,7 +1780,7 @@ begin
 
     --
     -- 0x74 - CRC_STATUS
-    slv_reg29_r1       <= host_crc_status;
+    slv_reg29_r1 <= host_crc_status;
 
 --         end if;
 --      end if;
@@ -1802,8 +1802,8 @@ begin
     -- 0x78 - REMAPPER_CONTROL[7:0]
     --           [2:0] REMAPPER_WRITE_CFG
     --           [6:4] REMAPPER_MODE
-    host_remapper_write_cfg      <= slv_reg30(2 downto 0);
-    host_remapper_mode           <= slv_reg30(6 downto 4);
+    host_remapper_write_cfg <= slv_reg30(2 downto 0);
+    host_remapper_mode      <= slv_reg30(6 downto 4);
 
 --         end if;
 --      end if;
@@ -1843,16 +1843,16 @@ begin
     --        [   16] TRIGGEN_EXT_POLARITY
     --        [   24] TRIGGEN_CNT_UPDATE
     --        [30:28] TRIGGEN_GEN_POLARITY
-    host_triggen_enable            <= slv_reg56(2 downto 0);
-    host_triggen_sync2readout      <= slv_reg56(6 downto 4);
-    host_triggen_readouttrigger    <= slv_reg56(8);
-    host_triggen_ext_polarity      <= slv_reg56(16);
-    host_triggen_cnt_update        <= slv_reg56(24);
-    host_triggen_gen_polarity      <= slv_reg56(30 downto 28);
+    host_triggen_enable         <= slv_reg56(2 downto 0);
+    host_triggen_sync2readout   <= slv_reg56(6 downto 4);
+    host_triggen_readouttrigger <= slv_reg56(8);
+    host_triggen_ext_polarity   <= slv_reg56(16);
+    host_triggen_cnt_update     <= slv_reg56(24);
+    host_triggen_gen_polarity   <= slv_reg56(30 downto 28);
 
     --
     -- 0xE4 - TRIGGEN_DEFAULT_FREQ
-    host_triggen_default_freq      <= slv_reg57;
+    host_triggen_default_freq <= slv_reg57;
 
 --         end if;
 --      end if;
@@ -1862,38 +1862,38 @@ begin
     begin
         if rising_edge(S_AXI_ACLK) then
             if S_AXI_ARESETN = '0' then
-                host_triggen_cnt_trigger0high  <= (others => '0');
-                host_triggen_cnt_trigger0low   <= (others => '0');
-                host_triggen_cnt_trigger1high  <= (others => '0');
-                host_triggen_cnt_trigger1low   <= (others => '0');
-                host_triggen_cnt_trigger2high  <= (others => '0');
-                host_triggen_cnt_trigger2low   <= (others => '0');
+                host_triggen_cnt_trigger0high <= (others => '0');
+                host_triggen_cnt_trigger0low  <= (others => '0');
+                host_triggen_cnt_trigger1high <= (others => '0');
+                host_triggen_cnt_trigger1low  <= (others => '0');
+                host_triggen_cnt_trigger2high <= (others => '0');
+                host_triggen_cnt_trigger2low  <= (others => '0');
             else
                 if ( host_triggen_cnt_update = '1' ) then
 
                     --
                     -- 0xE8 - TRIGGEN_TRIG0_HIGH
-                    host_triggen_cnt_trigger0high  <= slv_reg58;
+                    host_triggen_cnt_trigger0high <= slv_reg58;
 
                     --
                     -- 0xEC - TRIGGEN_TRIG0_LOW
-                    host_triggen_cnt_trigger0low   <= slv_reg59;
+                    host_triggen_cnt_trigger0low  <= slv_reg59;
 
                     --
                     -- 0xF0 - TRIGGEN_TRIG1_HIGH
-                    host_triggen_cnt_trigger1high  <= slv_reg60;
+                    host_triggen_cnt_trigger1high <= slv_reg60;
 
                     --
                     -- 0xF4 - TRIGGEN_TRIG1_LOW
-                    host_triggen_cnt_trigger1low   <= slv_reg61;
+                    host_triggen_cnt_trigger1low  <= slv_reg61;
 
                     --
                     -- 0xF8 - TRIGGEN_TRIG2_HIGH
-                    host_triggen_cnt_trigger2high  <= slv_reg62;
+                    host_triggen_cnt_trigger2high <= slv_reg62;
 
                     --
                     -- 0xFC - TRIGGEN_TRIG2_LOW
-                    host_triggen_cnt_trigger2low   <= slv_reg63;
+                    host_triggen_cnt_trigger2low  <= slv_reg63;
 
                 end if; -- if ( host_triggen_cnt_update == '1' ) then
 
@@ -1938,7 +1938,7 @@ begin
     end generate WITH_BLC_2;
 
     WITHOUT_BLC_2 : if (C_INCLUDE_BLC = 0) generate
-    host_fpn_prnu_values <= (others => '0');
+        host_fpn_prnu_values <= (others => '0');
     end generate WITHOUT_BLC_2;
 
     ------------------------------------------
@@ -1962,7 +1962,7 @@ begin
 
     -- 0x5C - SYNCGEN_DELAY
     --           [15: 0] DELAY
-    host_syncgen_delay <= slv_reg23(15 downto  0);
+    host_syncgen_delay <= slv_reg23(15 downto 0);
 
     -- 0x60 - SYNCGEN_HTIMING1
     --           [15: 0] HACTIVE
@@ -2001,10 +2001,10 @@ begin
             SIM_DEVICE  => "7series"
         )
         port map (
-            I       => vita_clk4x, -- Clock buffer input
-            O       => vita_clk  , -- Clock buffer output
-            CE      => one       ,
-            CLR     => zero
+            I   => vita_clk4x, -- Clock buffer input
+            O   => vita_clk,   -- Clock buffer output
+            CE  => one,
+            CLR => zero
         );
 
     ------------------------------------------
@@ -2013,122 +2013,122 @@ begin
     onsemi_vita_cam_core_inst : onsemi_vita_cam_core
         generic map
         (
-            C_VIDEO_DATA_WIDTH             => C_VIDEO_DATA_WIDTH,
-            C_VIDEO_DIRECT_OUTPUT          => C_VIDEO_DIRECT_OUTPUT,
-            --C_VIDEO_USE_SYNCGEN            => C_VIDEO_USE_SYNCGEN,
-            C_IO_VITA_DATA_WIDTH           => C_IO_VITA_DATA_WIDTH,
-            C_INCLUDE_BLC                  => C_INCLUDE_BLC,
-            C_INCLUDE_MONITOR              => C_INCLUDE_MONITOR,
-            C_FAMILY                       => C_FAMILY
+            C_VIDEO_DATA_WIDTH    => C_VIDEO_DATA_WIDTH,
+            C_VIDEO_DIRECT_OUTPUT => C_VIDEO_DIRECT_OUTPUT,
+            --C_VIDEO_USE_SYNCGEN => C_VIDEO_USE_SYNCGEN,
+            C_IO_VITA_DATA_WIDTH  => C_IO_VITA_DATA_WIDTH,
+            C_INCLUDE_BLC         => C_INCLUDE_BLC,
+            C_INCLUDE_MONITOR     => C_INCLUDE_MONITOR,
+            C_FAMILY              => C_FAMILY
         )
         port map
         (
-            clk200                         => clk200,
-            clk                            => vita_clk,
-            clk4x                          => vita_clk4x,
-            reset                          => reset,
-            oe                             => oe,
+            clk200 => clk200,
+            clk    => vita_clk,
+            clk4x  => vita_clk4x,
+            reset  => reset,
+            oe     => oe,
             -- HOST Interface - VITA
-            host_vita_reset                => host_vita_reset,
+            host_vita_reset => host_vita_reset,
             -- HOST Interface - ISERDES
-            host_iserdes_reset             => host_iserdes_reset,
-            host_iserdes_auto_align        => host_iserdes_auto_align,
-            host_iserdes_align_start       => host_iserdes_align_start,
-            host_iserdes_fifo_enable       => host_iserdes_fifo_enable,
-            host_iserdes_manual_tap        => host_iserdes_manual_tap,
-            host_iserdes_training          => host_iserdes_training,
-            host_iserdes_clk_ready         => host_iserdes_clk_ready,
-            host_iserdes_clk_status        => host_iserdes_clk_status,
-            host_iserdes_align_busy        => host_iserdes_align_busy,
-            host_iserdes_aligned           => host_iserdes_aligned,
+            host_iserdes_reset       => host_iserdes_reset,
+            host_iserdes_auto_align  => host_iserdes_auto_align,
+            host_iserdes_align_start => host_iserdes_align_start,
+            host_iserdes_fifo_enable => host_iserdes_fifo_enable,
+            host_iserdes_manual_tap  => host_iserdes_manual_tap,
+            host_iserdes_training    => host_iserdes_training,
+            host_iserdes_clk_ready   => host_iserdes_clk_ready,
+            host_iserdes_clk_status  => host_iserdes_clk_status,
+            host_iserdes_align_busy  => host_iserdes_align_busy,
+            host_iserdes_aligned     => host_iserdes_aligned,
             -- HOST Interface - Sync Channel Decoder
-            host_decoder_reset             => host_decoder_reset,
-            host_decoder_enable            => host_decoder_enable,
-            host_decoder_startoddeven      => host_decoder_startoddeven,
-            host_decoder_code_ls           => host_decoder_code_ls,
-            host_decoder_code_le           => host_decoder_code_le,
-            host_decoder_code_fs           => host_decoder_code_fs,
-            host_decoder_code_fe           => host_decoder_code_fe,
-            host_decoder_code_bl           => host_decoder_code_bl,
-            host_decoder_code_img          => host_decoder_code_img,
-            host_decoder_code_tr           => host_decoder_code_tr,
-            host_decoder_code_crc          => host_decoder_code_crc,
-            host_decoder_frame_start       => host_decoder_frame_start,
-            host_decoder_cnt_black_lines   => host_decoder_cnt_black_lines,
-            host_decoder_cnt_image_lines   => host_decoder_cnt_image_lines,
-            host_decoder_cnt_black_pixels  => host_decoder_cnt_black_pixels,
-            host_decoder_cnt_image_pixels  => host_decoder_cnt_image_pixels,
-            host_decoder_cnt_frames        => host_decoder_cnt_frames,
-            host_decoder_cnt_windows       => host_decoder_cnt_windows,
-            host_decoder_cnt_clocks        => host_decoder_cnt_clocks,
-            host_decoder_cnt_start_lines   => host_decoder_cnt_start_lines,
-            host_decoder_cnt_end_lines     => host_decoder_cnt_end_lines,
-            host_decoder_cnt_monitor0high  => host_decoder_cnt_monitor0high,
-            host_decoder_cnt_monitor0low   => host_decoder_cnt_monitor0low,
-            host_decoder_cnt_monitor1high  => host_decoder_cnt_monitor1high,
-            host_decoder_cnt_monitor1low   => host_decoder_cnt_monitor1low,
+            host_decoder_reset            => host_decoder_reset,
+            host_decoder_enable           => host_decoder_enable,
+            host_decoder_startoddeven     => host_decoder_startoddeven,
+            host_decoder_code_ls          => host_decoder_code_ls,
+            host_decoder_code_le          => host_decoder_code_le,
+            host_decoder_code_fs          => host_decoder_code_fs,
+            host_decoder_code_fe          => host_decoder_code_fe,
+            host_decoder_code_bl          => host_decoder_code_bl,
+            host_decoder_code_img         => host_decoder_code_img,
+            host_decoder_code_tr          => host_decoder_code_tr,
+            host_decoder_code_crc         => host_decoder_code_crc,
+            host_decoder_frame_start      => host_decoder_frame_start,
+            host_decoder_cnt_black_lines  => host_decoder_cnt_black_lines,
+            host_decoder_cnt_image_lines  => host_decoder_cnt_image_lines,
+            host_decoder_cnt_black_pixels => host_decoder_cnt_black_pixels,
+            host_decoder_cnt_image_pixels => host_decoder_cnt_image_pixels,
+            host_decoder_cnt_frames       => host_decoder_cnt_frames,
+            host_decoder_cnt_windows      => host_decoder_cnt_windows,
+            host_decoder_cnt_clocks       => host_decoder_cnt_clocks,
+            host_decoder_cnt_start_lines  => host_decoder_cnt_start_lines,
+            host_decoder_cnt_end_lines    => host_decoder_cnt_end_lines,
+            host_decoder_cnt_monitor0high => host_decoder_cnt_monitor0high,
+            host_decoder_cnt_monitor0low  => host_decoder_cnt_monitor0low,
+            host_decoder_cnt_monitor1high => host_decoder_cnt_monitor1high,
+            host_decoder_cnt_monitor1low  => host_decoder_cnt_monitor1low,
             -- HOST Interface - CRC Checker
-            host_crc_reset                 => host_crc_reset,
-            host_crc_initvalue             => host_crc_initvalue,
-            host_crc_status                => host_crc_status,
+            host_crc_reset     => host_crc_reset,
+            host_crc_initvalue => host_crc_initvalue,
+            host_crc_status    => host_crc_status,
             -- HOST Interface - Data Channel Remapper
-            host_remapper_write_cfg        => host_remapper_write_cfg,
-            host_remapper_mode             => host_remapper_mode,
+            host_remapper_write_cfg => host_remapper_write_cfg,
+            host_remapper_mode      => host_remapper_mode,
             -- HOST Interface - Trigger Generator
-            host_triggen_enable            => host_triggen_enable,
-            host_triggen_sync2readout      => host_triggen_sync2readout,
-            host_triggen_readouttrigger    => host_triggen_readouttrigger,
-            host_triggen_default_freq      => host_triggen_default_freq,
-            host_triggen_cnt_trigger0high  => host_triggen_cnt_trigger0high,
-            host_triggen_cnt_trigger0low   => host_triggen_cnt_trigger0low,
-            host_triggen_cnt_trigger1high  => host_triggen_cnt_trigger1high,
-            host_triggen_cnt_trigger1low   => host_triggen_cnt_trigger1low,
-            host_triggen_cnt_trigger2high  => host_triggen_cnt_trigger2high,
-            host_triggen_cnt_trigger2low   => host_triggen_cnt_trigger2low,
-            host_triggen_ext_debounce      => host_triggen_ext_debounce,
-            host_triggen_ext_polarity      => host_triggen_ext_polarity,
-            host_triggen_gen_polarity      => host_triggen_gen_polarity,
+            host_triggen_enable           => host_triggen_enable,
+            host_triggen_sync2readout     => host_triggen_sync2readout,
+            host_triggen_readouttrigger   => host_triggen_readouttrigger,
+            host_triggen_default_freq     => host_triggen_default_freq,
+            host_triggen_cnt_trigger0high => host_triggen_cnt_trigger0high,
+            host_triggen_cnt_trigger0low  => host_triggen_cnt_trigger0low,
+            host_triggen_cnt_trigger1high => host_triggen_cnt_trigger1high,
+            host_triggen_cnt_trigger1low  => host_triggen_cnt_trigger1low,
+            host_triggen_cnt_trigger2high => host_triggen_cnt_trigger2high,
+            host_triggen_cnt_trigger2low  => host_triggen_cnt_trigger2low,
+            host_triggen_ext_debounce     => host_triggen_ext_debounce,
+            host_triggen_ext_polarity     => host_triggen_ext_polarity,
+            host_triggen_gen_polarity     => host_triggen_gen_polarity,
             -- HOST Interface - FPN/PRNU Correction
-            host_fpn_prnu_values           => host_fpn_prnu_values,
+            host_fpn_prnu_values => host_fpn_prnu_values,
             -- HOST Interface - Sync Generator
-            host_syncgen_delay             => host_syncgen_delay,
-            host_syncgen_hactive           => host_syncgen_hactive,
-            host_syncgen_hfporch           => host_syncgen_hfporch,
-            host_syncgen_hsync             => host_syncgen_hsync,
-            host_syncgen_hbporch           => host_syncgen_hbporch,
-            host_syncgen_vactive           => host_syncgen_vactive,
-            host_syncgen_vfporch           => host_syncgen_vfporch,
-            host_syncgen_vsync             => host_syncgen_vsync,
-            host_syncgen_vbporch           => host_syncgen_vbporch,
+            host_syncgen_delay   => host_syncgen_delay,
+            host_syncgen_hactive => host_syncgen_hactive,
+            host_syncgen_hfporch => host_syncgen_hfporch,
+            host_syncgen_hsync   => host_syncgen_hsync,
+            host_syncgen_hbporch => host_syncgen_hbporch,
+            host_syncgen_vactive => host_syncgen_vactive,
+            host_syncgen_vfporch => host_syncgen_vfporch,
+            host_syncgen_vsync   => host_syncgen_vsync,
+            host_syncgen_vbporch => host_syncgen_vbporch,
             -- I/O pins
-            io_vita_clk_pll                => io_vita_clk_pll,
-            io_vita_reset_n                => io_vita_reset_n,
-            io_vita_trigger                => io_vita_trigger,
-            io_vita_monitor                => io_vita_monitor,
-            io_vita_clk_out_p              => io_vita_clk_out_p,
-            io_vita_clk_out_n              => io_vita_clk_out_n,
-            io_vita_sync_p                 => io_vita_sync_p,
-            io_vita_sync_n                 => io_vita_sync_n,
-            io_vita_data_p                 => io_vita_data_p,
-            io_vita_data_n                 => io_vita_data_n,
+            io_vita_clk_pll   => io_vita_clk_pll,
+            io_vita_reset_n   => io_vita_reset_n,
+            io_vita_trigger   => io_vita_trigger,
+            io_vita_monitor   => io_vita_monitor,
+            io_vita_clk_out_p => io_vita_clk_out_p,
+            io_vita_clk_out_n => io_vita_clk_out_n,
+            io_vita_sync_p    => io_vita_sync_p,
+            io_vita_sync_n    => io_vita_sync_n,
+            io_vita_data_p    => io_vita_data_p,
+            io_vita_data_n    => io_vita_data_n,
             -- Trigger Port
-            trigger1                       => trigger1,
+            trigger1 => trigger1,
             -- Frame Sync Port
-            fsync                          => fsync,
+            fsync => fsync,
             -- Video Port
-            video_vsync_o                  => video_vsync,
-            video_hsync_o                  => video_hsync,
-            video_vblank_o                 => video_vblank,
-            video_hblank_o                 => video_hblank,
-            video_active_video_o           => video_active_video,
-            video_data_o                   => video_data,
+            video_vsync_o        => video_vsync,
+            video_hsync_o        => video_hsync,
+            video_vblank_o       => video_vblank,
+            video_hblank_o       => video_hblank,
+            video_active_video_o => video_active_video,
+            video_data_o         => video_data,
             -- Debug Port
-            debug_iserdes_o                => debug_iserdes_o,
-            debug_decoder_o                => debug_decoder_o,
-            debug_crc_o                    => debug_crc_o,
-            debug_triggen_o                => debug_triggen_o,
-            debug_syncgen_o                => debug_syncgen_o,
-            debug_video_o                  => debug_video_o
+            debug_iserdes_o => debug_iserdes_o,
+            debug_decoder_o => debug_decoder_o,
+            debug_crc_o     => debug_crc_o,
+            debug_triggen_o => debug_triggen_o,
+            debug_syncgen_o => debug_syncgen_o,
+            debug_video_o   => debug_video_o
         );
 
     -- User logic ends

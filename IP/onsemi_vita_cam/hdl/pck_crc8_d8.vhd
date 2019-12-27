@@ -46,8 +46,8 @@ package PCK_CRC8_D8 is
     -- polynomial: (0 2 3 6 8)
     -- data width: 8
     -- convention: the first serial bit is D[7]
-    function nextCRC8_D8
-        (data: unsigned(7 downto 0);
+    function nextCRC8_D8 (
+        data: unsigned(7 downto 0);
         crc:  unsigned(7 downto 0))
         return unsigned;
 end PCK_CRC8_D8;
@@ -58,8 +58,8 @@ package body PCK_CRC8_D8 is
     -- polynomial: (0 2 3 6 8)
     -- data width: 8
     -- convention: the first serial bit is D[7]
-    function nextCRC8_D8
-        (data: unsigned(7 downto 0);
+    function nextCRC8_D8 (
+        data: unsigned(7 downto 0);
         crc:  unsigned(7 downto 0))
         return unsigned is
 

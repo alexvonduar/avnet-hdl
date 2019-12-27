@@ -41,7 +41,7 @@
 //              limitation shall apply not-withstanding the failure of the
 //              essential purpose of any limited remedies herein.
 //
-//  Copyright � 2006 Xilinx, Inc.
+//  Copyright (C) 2006 Xilinx, Inc.
 //  All rights reserved
 //
 //////////////////////////////////////////////////////////////////////////////
@@ -125,13 +125,13 @@ module phsaligner # (
     //////////////////////////////////////////////////////////
     // Below starts the phase alignment state machine
     //////////////////////////////////////////////////////////
-    parameter INIT        = 6'b1 << 0;
-    parameter SEARCH      = 6'b1 << 1;  // Searching for control tokens
-    parameter BITSLIP     = 6'b1 << 2;
-    parameter RCVDCTKN    = 6'b1 << 3;  // Received at one Control Token and check for more
-    parameter BLNKPRD     = 6'b1 << 4;
-    parameter PSALGND     = 6'b1 << 5;  // Phase alignment achieved
-    parameter nSTATES     = 6;
+    parameter INIT     = 6'b1 << 0;
+    parameter SEARCH   = 6'b1 << 1; // Searching for control tokens
+    parameter BITSLIP  = 6'b1 << 2;
+    parameter RCVDCTKN = 6'b1 << 3; // Received at one Control Token and check for more
+    parameter BLNKPRD  = 6'b1 << 4;
+    parameter PSALGND  = 6'b1 << 5; // Phase alignment achieved
+    parameter nSTATES  = 6;
 
     reg [(nSTATES-1):0] cstate = {{(nSTATES-1){1'b0}}, 1'b1};  //current and next states
     reg [(nSTATES-1):0] nstate;
@@ -173,9 +173,9 @@ module phsaligner # (
 
             SEARCH: begin
                 if(blnkbgn)
-                nstate = RCVDCTKN;
+                    nstate = RCVDCTKN;
                 else
-                nstate = (ctkn_srh_tout) ? BITSLIP : SEARCH;
+                    nstate = (ctkn_srh_tout) ? BITSLIP : SEARCH;
             end
 
             BITSLIP: begin
@@ -184,9 +184,9 @@ module phsaligner # (
 
             RCVDCTKN: begin
                 if(rcvd_ctkn)
-                nstate = (ctkn_cnt_tout) ? BLNKPRD : RCVDCTKN;
+                    nstate = (ctkn_cnt_tout) ? BLNKPRD : RCVDCTKN;
                 else
-                nstate = SEARCH;
+                    nstate = SEARCH;
             end
 
             BLNKPRD: begin
@@ -203,52 +203,52 @@ module phsaligner # (
 
     always @ (posedge clk or posedge rst) begin
         if(rst) begin
-            psaligned          <=#1 1'b0; //phase alignment success flag
-            bitslip            <=#1 1'b0;
-            ctkn_srh_rst       <=#1 1'b1; //control token search timer reset
-            ctkn_cnt_rst       <=#1 1'b1; //control token counter reset
+            psaligned    <=#1 1'b0; //phase alignment success flag
+            bitslip      <=#1 1'b0;
+            ctkn_srh_rst <=#1 1'b1; //control token search timer reset
+            ctkn_cnt_rst <=#1 1'b1; //control token counter reset
 
-            bitslip            <=#1 1'b0;
-            bitslip_cnt        <=#1 3'h0;
-            flipgear           <=#1 1'b0;
-            blnkprd_cnt        <=#1 {BLNKPRD_CNT_WD{1'b0}};
+            bitslip     <=#1 1'b0;
+            bitslip_cnt <=#1 3'h0;
+            flipgear    <=#1 1'b0;
+            blnkprd_cnt <=#1 {BLNKPRD_CNT_WD{1'b0}};
         end
         else begin
             case (cstate) // synthesis parallel_case full_case
                 INIT: begin
-                    ctkn_srh_rst       <=#1 1'b0;
-                    ctkn_cnt_rst       <=#1 1'b1;
-                    bitslip            <=#1 1'b0;
-                    psaligned          <=#1 1'b0;
+                    ctkn_srh_rst <=#1 1'b0;
+                    ctkn_cnt_rst <=#1 1'b1;
+                    bitslip      <=#1 1'b0;
+                    psaligned    <=#1 1'b0;
 
-                    bitslip            <=#1 1'b0;
-                    bitslip_cnt        <=#1 3'h0;
-                    flipgear           <=#1 1'b0;
-                    blnkprd_cnt        <=#1 {BLNKPRD_CNT_WD{1'b0}};
+                    bitslip     <=#1 1'b0;
+                    bitslip_cnt <=#1 3'h0;
+                    flipgear    <=#1 1'b0;
+                    blnkprd_cnt <=#1 {BLNKPRD_CNT_WD{1'b0}};
                 end
 
                 SEARCH: begin
-                    ctkn_srh_rst       <=#1 1'b0;
-                    ctkn_cnt_rst       <=#1 1'b1;
-                    bitslip            <=#1 1'b0;
-                    psaligned          <=#1 1'b0;
+                    ctkn_srh_rst <=#1 1'b0;
+                    ctkn_cnt_rst <=#1 1'b1;
+                    bitslip      <=#1 1'b0;
+                    psaligned    <=#1 1'b0;
                 end
 
                 BITSLIP: begin
-                    ctkn_srh_rst       <=#1 1'b1;
+                    ctkn_srh_rst <=#1 1'b1;
 
-                    bitslip            <=#1 1'b1;
-                    bitslip_cnt        <=#1 bitslip_cnt + 1'b1;
-                    flipgear           <=#1 bitslip_cnt[2]; //bitslip has toggled for 4 times
+                    bitslip     <=#1 1'b1;
+                    bitslip_cnt <=#1 bitslip_cnt + 1'b1;
+                    flipgear    <=#1 bitslip_cnt[2]; //bitslip has toggled for 4 times
                 end
 
                 RCVDCTKN: begin
-                    ctkn_srh_rst       <=#1 1'b0;
-                    ctkn_cnt_rst       <=#1 1'b0;
+                    ctkn_srh_rst <=#1 1'b0;
+                    ctkn_cnt_rst <=#1 1'b0;
                 end
 
                 BLNKPRD: begin
-                    blnkprd_cnt        <=#1 blnkprd_cnt + 1'b1;
+                    blnkprd_cnt <=#1 blnkprd_cnt + 1'b1;
                 end
 
                 PSALGND: begin

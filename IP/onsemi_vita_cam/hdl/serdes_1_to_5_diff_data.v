@@ -53,15 +53,15 @@ module serdes_1_to_5_diff_data # (
     parameter SIM_TAP_DELAY = 50,
     parameter BITSLIP_ENABLE = "FALSE"
 )(
-    input  wire        use_phase_detector,  // '1' enables the phase detector logic
-    input  wire        datain_p,            // Input from LVDS receiver pin
-    input  wire        datain_n,            // Input from LVDS receiver pin
-    input  wire        rxioclk,             // IO Clock network
-    input  wire        rxserdesstrobe,      // Parallel data capture strobe
-    input  wire        reset,               // Reset line
-    input  wire        gclk,                // Global clock
-    input  wire        bitslip,             // Bitslip control line
-    output wire [4:0]  data_out             // Output data
+    input  wire       use_phase_detector, // '1' enables the phase detector logic
+    input  wire       datain_p,           // Input from LVDS receiver pin
+    input  wire       datain_n,           // Input from LVDS receiver pin
+    input  wire       rxioclk,            // IO Clock network
+    input  wire       rxserdesstrobe,     // Parallel data capture strobe
+    input  wire       reset,              // Reset line
+    input  wire       gclk,               // Global clock
+    input  wire       bitslip,            // Bitslip control line
+    output wire [4:0] data_out            // Output data
 );
 
     wire       ddly_m;
@@ -126,7 +126,7 @@ module serdes_1_to_5_diff_data # (
             if (counter[5] == 1'b1) begin
                 enable <= 1'b1 ;
             end
-            if (state == 0 && enable == 1'b1) begin       // Wait for IODELAY to be available
+            if (state == 0 && enable == 1'b1) begin // Wait for IODELAY to be available
                 cal_data_master <= 1'b0 ;
                 cal_data_sint <= 1'b0 ;
                 rst_data <= 1'b0 ;
@@ -134,14 +134,14 @@ module serdes_1_to_5_diff_data # (
                     state <= 1 ;
                 end
             end
-            else if (state == 1) begin          // Issue calibrate command to both master and slave, needed for simulation, not for the silicon
+            else if (state == 1) begin // Issue calibrate command to both master and slave, needed for simulation, not for the silicon
                 cal_data_master <= 1'b1 ;
                 cal_data_sint <= 1'b1 ;
-                if (busy_data_d == 1'b1) begin        // and wait for command to be accepted
+                if (busy_data_d == 1'b1) begin // and wait for command to be accepted
                     state <= 2 ;
                 end
             end
-            else if (state == 2) begin          // Now RST master and slave IODELAYs needed for simulation, not for the silicon
+            else if (state == 2) begin // Now RST master and slave IODELAYs needed for simulation, not for the silicon
                 cal_data_master <= 1'b0 ;
                 cal_data_sint <= 1'b0 ;
                 if (busy_data_d == 1'b0) begin
@@ -149,30 +149,30 @@ module serdes_1_to_5_diff_data # (
                     state <= 3 ;
                 end
             end
-            else if (state == 3) begin          // Wait for IODELAY to be available
+            else if (state == 3) begin // Wait for IODELAY to be available
                 rst_data <= 1'b0 ;
                 if (busy_data_d == 1'b0) begin
                     state <= 4 ;
                 end
             end
-            else if (state == 4) begin          // Wait for occasional enable
+            else if (state == 4) begin // Wait for occasional enable
                 if (counter[8] == 1'b1) begin
                     state <= 5 ;
                 end
             end
-            else if (state == 5) begin          // Calibrate slave only
+            else if (state == 5) begin // Calibrate slave only
                 if (busy_data_d == 1'b0) begin
                     cal_data_sint <= 1'b1 ;
                     state <= 6 ;
                 end
             end
-            else if (state == 6) begin          // Wait for command to be accepted
+            else if (state == 6) begin // Wait for command to be accepted
                 cal_data_sint <= 1'b0 ;
                 if (busy_data_d == 1'b1) begin
                     state <= 7 ;
                 end
             end
-            else if (state == 7) begin          // Wait for all IODELAYs to be available, ie CAL command finished
+            else if (state == 7) begin // Wait for all IODELAYs to be available, ie CAL command finished
                 cal_data_sint <= 1'b0 ;
                 if (busy_data_d == 1'b0) begin
                     state <= 4 ;
@@ -181,16 +181,16 @@ module serdes_1_to_5_diff_data # (
         end
     end
 
-    always @ (posedge gclk or posedge reset)        // Per-bit phase detection state machine
+    always @ (posedge gclk or posedge reset) // Per-bit phase detection state machine
     begin
         if (reset == 1'b1) begin
             pdcounter <= 5'b1000 ;
             ce_data_inta <= 1'b0 ;
-            flag <= 1'b0 ;              // flag is there to only allow one inc or dec per cal (test)
+            flag <= 1'b0 ; // flag is there to only allow one inc or dec per cal (test)
         end
         else begin
             busy_data_d <= busy_data_or[1] ;
-            if (use_phase_detector == 1'b1) begin       // decide whther pd is used
+            if (use_phase_detector == 1'b1) begin // decide whther pd is used
                 incdec_data_d <= incdec_data_or[1] ;
                 valid_data_d <= valid_data_or[1] ;
                 if (ce_data_inta == 1'b1) begin
@@ -218,7 +218,7 @@ module serdes_1_to_5_diff_data # (
                     pdcounter <= 5'b10000 ;
                     flag <= 1'b1 ;
                 end
-                else if (valid_data_d == 1'b1) begin      // increment filter
+                else if (valid_data_d == 1'b1) begin // increment filter
                     ce_data_inta <= 1'b0 ;
                     if (incdec_data_d == 1'b1 && pdcounter != 5'b11111) begin
                         pdcounter <= pdcounter + 5'b00001 ;
@@ -240,89 +240,89 @@ module serdes_1_to_5_diff_data # (
 
     assign inc_data = inc_data_int ;
 
-    assign incdec_data_or[0] = 1'b0 ;             // Input Mux - Initialise generate loop OR gates
+    assign incdec_data_or[0] = 1'b0 ; // Input Mux - Initialise generate loop OR gates
     assign valid_data_or[0] = 1'b0 ;
     assign busy_data_or[0] = 1'b0 ;
 
-    assign incdec_data_im = incdec_data & mux;          // Input muxes
-    assign incdec_data_or[1] = incdec_data_im | incdec_data_or;      // AND gates to allow just one signal through at a tome
-    assign valid_data_im = valid_data & mux;          // followed by an OR
-    assign valid_data_or[1] = valid_data_im | valid_data_or;     // for the three inputs from each PD
-    assign busy_data_or[1] = busy_data | busy_data_or;       // The busy signals just need an OR gate
+    assign incdec_data_im = incdec_data & mux; // Input muxes
+    assign incdec_data_or[1] = incdec_data_im | incdec_data_or; // AND gates to allow just one signal through at a tome
+    assign valid_data_im = valid_data & mux; // followed by an OR
+    assign valid_data_or[1] = valid_data_im | valid_data_or; // for the three inputs from each PD
+    assign busy_data_or[1] = busy_data | busy_data_or; // The busy signals just need an OR gate
 
     assign all_ce = debug_in[0] ;
 
     IBUFDS #(
-        .DIFF_TERM    (DIFF_TERM)
+        .DIFF_TERM (DIFF_TERM)
     )
     data_in (
-        .I            (datain_p),
-        .IB           (datain_n),
-        .O            (rx_data_in)
+        .I  (datain_p),
+        .IB (datain_n),
+        .O  (rx_data_in)
     );
 
     //
     // Master IDELAY
     //
     IODELAY2 #(
-        .DATA_RATE            ("SDR"),
-        .IDELAY_VALUE         (0),
-        .IDELAY2_VALUE        (0),
-        .IDELAY_MODE          ("NORMAL" ),
-        .ODELAY_VALUE         (0),
-        .IDELAY_TYPE          ("DIFF_PHASE_DETECTOR"),
-        .COUNTER_WRAPAROUND   ("STAY_AT_LIMIT"), //("WRAPAROUND"),
-        .DELAY_SRC            ("IDATAIN"),
-        .SERDES_MODE          ("MASTER"),
-        .SIM_TAPDELAY_VALUE   (SIM_TAP_DELAY)
+        .DATA_RATE          ("SDR"),
+        .IDELAY_VALUE       (0),
+        .IDELAY2_VALUE      (0),
+        .IDELAY_MODE        ("NORMAL" ),
+        .ODELAY_VALUE       (0),
+        .IDELAY_TYPE        ("DIFF_PHASE_DETECTOR"),
+        .COUNTER_WRAPAROUND ("STAY_AT_LIMIT"), //("WRAPAROUND"),
+        .DELAY_SRC          ("IDATAIN"),
+        .SERDES_MODE        ("MASTER"),
+        .SIM_TAPDELAY_VALUE (SIM_TAP_DELAY)
     ) iodelay_m (
-        .IDATAIN              (rx_data_in),      // data from IBUFDS
-        .TOUT                 (),                // tri-state signal to IOB
-        .DOUT                 (),                // output data to IOB
-        .T                    (1'b1),            // tri-state control from OLOGIC/OSERDES2
-        .ODATAIN              (1'b0),            // data from OLOGIC/OSERDES2
-        .DATAOUT              (ddly_m),          // Output data 1 to ILOGIC/ISERDES2
-        .DATAOUT2             (),                // Output data 2 to ILOGIC/ISERDES2
-        .IOCLK0               (rxioclk),         // High speed clock for calibration
-        .IOCLK1               (1'b0),            // High speed clock for calibration
-        .CLK                  (gclk),            // Fabric clock (GCLK) for control signals
-        .CAL                  (cal_data_master), // Calibrate control signal
-        .INC                  (inc_data),        // Increment counter
-        .CE                   (ce_data),         // Clock Enable
-        .RST                  (rst_data),        // Reset delay line
-        .BUSY                 ()                 // output signal indicating sync circuit has finished / calibration has finished
+        .IDATAIN  (rx_data_in),      // data from IBUFDS
+        .TOUT     (),                // tri-state signal to IOB
+        .DOUT     (),                // output data to IOB
+        .T        (1'b1),            // tri-state control from OLOGIC/OSERDES2
+        .ODATAIN  (1'b0),            // data from OLOGIC/OSERDES2
+        .DATAOUT  (ddly_m),          // Output data 1 to ILOGIC/ISERDES2
+        .DATAOUT2 (),                // Output data 2 to ILOGIC/ISERDES2
+        .IOCLK0   (rxioclk),         // High speed clock for calibration
+        .IOCLK1   (1'b0),            // High speed clock for calibration
+        .CLK      (gclk),            // Fabric clock (GCLK) for control signals
+        .CAL      (cal_data_master), // Calibrate control signal
+        .INC      (inc_data),        // Increment counter
+        .CE       (ce_data),         // Clock Enable
+        .RST      (rst_data),        // Reset delay line
+        .BUSY     ()                 // output signal indicating sync circuit has finished / calibration has finished
     );
 
     //
     // Slave IDELAY
     //
     IODELAY2 #(
-        .DATA_RATE            ("SDR"),
-        .IDELAY_VALUE         (0),
-        .IDELAY2_VALUE        (0),
-        .IDELAY_MODE          ("NORMAL" ),
-        .ODELAY_VALUE         (0),
-        .IDELAY_TYPE          ("DIFF_PHASE_DETECTOR"),
-        .COUNTER_WRAPAROUND   ("WRAPAROUND"),
-        .DELAY_SRC            ("IDATAIN"),
-        .SERDES_MODE          ("SLAVE"),
-        .SIM_TAPDELAY_VALUE   (SIM_TAP_DELAY)
+        .DATA_RATE          ("SDR"),
+        .IDELAY_VALUE       (0),
+        .IDELAY2_VALUE      (0),
+        .IDELAY_MODE        ("NORMAL" ),
+        .ODELAY_VALUE       (0),
+        .IDELAY_TYPE        ("DIFF_PHASE_DETECTOR"),
+        .COUNTER_WRAPAROUND ("WRAPAROUND"),
+        .DELAY_SRC          ("IDATAIN"),
+        .SERDES_MODE        ("SLAVE"),
+        .SIM_TAPDELAY_VALUE (SIM_TAP_DELAY)
     ) iodelay_s (
-        .IDATAIN              (rx_data_in),  // data from IBUFDS
-        .TOUT                 (),            // tri-state signal to IOB
-        .DOUT                 (),            // output data to IOB
-        .T                    (1'b1),        // tri-state control from OLOGIC/OSERDES2
-        .ODATAIN              (1'b0),        // data from OLOGIC/OSERDES2
-        .DATAOUT              (ddly_s),      // Slave output data to ILOGIC/ISERDES2
-        .DATAOUT2             (),            //
-        .IOCLK0               (rxioclk),     // High speed IO clock for calibration
-        .IOCLK1               (1'b0),
-        .CLK                  (gclk),        // Fabric clock (GCLK) for control signals
-        .CAL                  (cal_data_slave), // Calibrate control signal
-        .INC                  (inc_data),       // Increment counter
-        .CE                   (ce_data),        // Clock Enable
-        .RST                  (rst_data),       // Reset delay line
-        .BUSY                 (busys)        // output signal indicating sync circuit has finished / calibration has finished
+        .IDATAIN  (rx_data_in),     // data from IBUFDS
+        .TOUT     (),               // tri-state signal to IOB
+        .DOUT     (),               // output data to IOB
+        .T        (1'b1),           // tri-state control from OLOGIC/OSERDES2
+        .ODATAIN  (1'b0),           // data from OLOGIC/OSERDES2
+        .DATAOUT  (ddly_s),         // Slave output data to ILOGIC/ISERDES2
+        .DATAOUT2 (),               //
+        .IOCLK0   (rxioclk),        // High speed IO clock for calibration
+        .IOCLK1   (1'b0),
+        .CLK      (gclk),           // Fabric clock (GCLK) for control signals
+        .CAL      (cal_data_slave), // Calibrate control signal
+        .INC      (inc_data),       // Increment counter
+        .CE       (ce_data),        // Clock Enable
+        .RST      (rst_data),       // Reset delay line
+        .BUSY     (busys)           // output signal indicating sync circuit has finished / calibration has finished
     );
 
     //
@@ -330,33 +330,33 @@ module serdes_1_to_5_diff_data # (
     //
 
     ISERDES2 #(
-        .DATA_WIDTH       (5),
-        .DATA_RATE        ("SDR"),
-        .BITSLIP_ENABLE   (BITSLIP_ENABLE),
-        .SERDES_MODE      ("MASTER"),
-        .INTERFACE_TYPE   ("RETIMED")
+        .DATA_WIDTH     (5),
+        .DATA_RATE      ("SDR"),
+        .BITSLIP_ENABLE (BITSLIP_ENABLE),
+        .SERDES_MODE    ("MASTER"),
+        .INTERFACE_TYPE ("RETIMED")
     )
     iserdes_m (
-        .D                (ddly_m),
-        .CE0              (1'b1),
-        .CLK0             (rxioclk),
-        .CLK1             (1'b0),
-        .IOCE             (rxserdesstrobe),
-        .RST              (reset),
-        .CLKDIV           (gclk),
-        .SHIFTIN          (pd_edge),
-        .BITSLIP          (bitslip),
-        .FABRICOUT        (),
-        .Q4               (data_out[0]),
-        .Q3               (data_out[1]),
-        .Q2               (data_out[2]),
-        .Q1               (data_out[3]),
-        .DFB              (),
-        .CFB0             (),
-        .CFB1             (),
-        .VALID            (valid_data),
-        .INCDEC           (incdec_data),
-        .SHIFTOUT         (cascade)
+        .D         (ddly_m),
+        .CE0       (1'b1),
+        .CLK0      (rxioclk),
+        .CLK1      (1'b0),
+        .IOCE      (rxserdesstrobe),
+        .RST       (reset),
+        .CLKDIV    (gclk),
+        .SHIFTIN   (pd_edge),
+        .BITSLIP   (bitslip),
+        .FABRICOUT (),
+        .Q4        (data_out[0]),
+        .Q3        (data_out[1]),
+        .Q2        (data_out[2]),
+        .Q1        (data_out[3]),
+        .DFB       (),
+        .CFB0      (),
+        .CFB1      (),
+        .VALID     (valid_data),
+        .INCDEC    (incdec_data),
+        .SHIFTOUT  (cascade)
     );
 
     //
@@ -364,32 +364,32 @@ module serdes_1_to_5_diff_data # (
     //
 
     ISERDES2 #(
-        .DATA_WIDTH       (5),
-        .DATA_RATE        ("SDR"),
-        .BITSLIP_ENABLE   (BITSLIP_ENABLE),
-        .SERDES_MODE      ("SLAVE"),
-        .INTERFACE_TYPE   ("RETIMED")
+        .DATA_WIDTH     (5),
+        .DATA_RATE      ("SDR"),
+        .BITSLIP_ENABLE (BITSLIP_ENABLE),
+        .SERDES_MODE    ("SLAVE"),
+        .INTERFACE_TYPE ("RETIMED")
     ) iserdes_s (
-        .D                (ddly_s),
-        .CE0              (1'b1),
-        .CLK0             (rxioclk),
-        .CLK1             (1'b0),
-        .IOCE             (rxserdesstrobe),
-        .RST              (reset),
-        .CLKDIV           (gclk),
-        .SHIFTIN          (cascade),
-        .BITSLIP          (bitslip),
-        .FABRICOUT        (),
-        .Q4               (data_out[4]),
-        .Q3               (),
-        .Q2               (),
-        .Q1               (),
-        .DFB              (),
-        .CFB0             (),
-        .CFB1             (),
-        .VALID            (),
-        .INCDEC           (),
-        .SHIFTOUT         (pd_edge)
+        .D         (ddly_s),
+        .CE0       (1'b1),
+        .CLK0      (rxioclk),
+        .CLK1      (1'b0),
+        .IOCE      (rxserdesstrobe),
+        .RST       (reset),
+        .CLKDIV    (gclk),
+        .SHIFTIN   (cascade),
+        .BITSLIP   (bitslip),
+        .FABRICOUT (),
+        .Q4        (data_out[4]),
+        .Q3        (),
+        .Q2        (),
+        .Q1        (),
+        .DFB       (),
+        .CFB0      (),
+        .CFB1      (),
+        .VALID     (),
+        .INCDEC    (),
+        .SHIFTOUT  (pd_edge)
     );
 
 

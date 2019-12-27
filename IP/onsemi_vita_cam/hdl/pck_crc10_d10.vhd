@@ -35,8 +35,8 @@ package PCK_CRC10_D10 is
     -- polynomial: (0 1 2 3 6 9 10)
     -- data width: 10
     -- convention: the first serial bit is D[9]
-    function nextCRC10_D10
-        (Data: unsigned(9 downto 0);
+    function nextCRC10_D10 (
+        Data: unsigned(9 downto 0);
         crc:  unsigned(9 downto 0))
         return unsigned;
 end PCK_CRC10_D10;
@@ -47,13 +47,13 @@ package body PCK_CRC10_D10 is
     -- polynomial: (0 1 2 3 6 9 10)
     -- data width: 10
     -- convention: the first serial bit is D[9]
-    function nextCRC10_D10
-        (Data: unsigned(9 downto 0);
+    function nextCRC10_D10 (
+        Data: unsigned(9 downto 0);
         crc:  unsigned(9 downto 0))
         return unsigned is
 
-        variable d:      unsigned(9 downto 0);
-        variable c:      unsigned(9 downto 0);
+        variable d: unsigned(9 downto 0);
+        variable c: unsigned(9 downto 0);
         variable newcrc: unsigned(9 downto 0);
 
     begin

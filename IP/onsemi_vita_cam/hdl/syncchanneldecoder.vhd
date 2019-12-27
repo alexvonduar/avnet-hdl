@@ -53,90 +53,89 @@ use work.all;
 -----------------------
 entity syncchanneldecoder is
     generic (
-        NROF_CONN       : integer;
-        DATAWIDTH       : integer;
-        NROF_WINDOWS    : integer;
+        NROF_CONN         : integer;
+        DATAWIDTH         : integer;
+        NROF_WINDOWS      : integer;
         C_INCLUDE_MONITOR : integer
     );
     port (
         -- Control signals
-        CLOCK               : in    std_logic;
-        RESET               : in    std_logic;
+        CLOCK : in std_logic;
+        RESET : in std_logic;
 
         -- Internal signaling
 
-        en_decoder          : in    std_logic;
-        --busy_decoder        : out   std_logic;
+        en_decoder : in std_logic;
+        --busy_decoder : out std_logic;
 
-        PAR_DATA_RDEN       : out   std_logic;
-        PAR_DATA_EMPTY      : in    std_logic;
-        PAR_DATAIN          : in    std_logic_vector((NROF_CONN*DATAWIDTH)-1 downto 0);
+        PAR_DATA_RDEN       : out std_logic;
+        PAR_DATA_EMPTY      : in  std_logic;
+        PAR_DATAIN          : in  std_logic_vector((NROF_CONN*DATAWIDTH)-1 downto 0);
 
-        PAR_SYNCOUT         : out   std_logic_vector((DATAWIDTH)-1 downto 0);
-        PAR_DATAOUT         : out   std_logic_vector(((NROF_CONN-1)*DATAWIDTH)-1 downto 0);
-        PAR_DATA_IMGVALID   : out   std_logic;
-        PAR_DATA_BLACKVALID : out   std_logic;
-        PAR_DATA_LINE       : out   std_logic;
-        PAR_DATA_FRAME      : out   std_logic;
-        KERNEL_ODD_EVEN     : out   std_logic;
-        START_KERNEL        : out   std_logic;
+        PAR_SYNCOUT         : out std_logic_vector((DATAWIDTH)-1 downto 0);
+        PAR_DATAOUT         : out std_logic_vector(((NROF_CONN-1)*DATAWIDTH)-1 downto 0);
+        PAR_DATA_IMGVALID   : out std_logic;
+        PAR_DATA_BLACKVALID : out std_logic;
+        PAR_DATA_LINE       : out std_logic;
+        PAR_DATA_FRAME      : out std_logic;
+        KERNEL_ODD_EVEN     : out std_logic;
+        START_KERNEL        : out std_logic;
 
-        StartOddEven        : in    std_logic_vector(31 downto 0);
+        StartOddEven : in std_logic_vector(31 downto 0);
 
-        LS_value            : in    std_logic_vector(9 downto 0);
-        LE_value            : in    std_logic_vector(9 downto 0);
-        FS_value            : in    std_logic_vector(9 downto 0);
-        FE_value            : in    std_logic_vector(9 downto 0);
-        BL_value            : in    std_logic_vector(9 downto 0);
-        IMG_value           : in    std_logic_vector(9 downto 0);
-        TR_value            : in    std_logic_vector(9 downto 0);
-        CRC_value           : in    std_logic_vector(9 downto 0);
-
+        LS_value  : in std_logic_vector(9 downto 0);
+        LE_value  : in std_logic_vector(9 downto 0);
+        FS_value  : in std_logic_vector(9 downto 0);
+        FE_value  : in std_logic_vector(9 downto 0);
+        BL_value  : in std_logic_vector(9 downto 0);
+        IMG_value : in std_logic_vector(9 downto 0);
+        TR_value  : in std_logic_vector(9 downto 0);
+        CRC_value : in std_logic_vector(9 downto 0);
 
         -- synchro signals
-        framestart          : out   std_logic;
+        framestart : out std_logic;
 
-        windowstart         : out   std_logic;
-        windowend           : out   std_logic;
+        windowstart : out std_logic;
+        windowend   : out std_logic;
 
-        linestart           : out   std_logic;
-        lineend             : out   std_logic;
+        linestart : out std_logic;
+        lineend   : out std_logic;
 
-        blacklinestart      : out   std_logic;
-        blacklineend        : out   std_logic;
+        blacklinestart : out std_logic;
+        blacklineend   : out std_logic;
 
-        imagelinestart      : out   std_logic;
-        imagelineend        : out   std_logic;
+        imagelinestart : out std_logic;
+        imagelineend   : out std_logic;
 
-        validcrc            : out   std_logic;
+        validcrc : out std_logic;
 
         -- counters
-        FramesCnt           : out   std_logic_vector(31 downto 0);
+        FramesCnt : out std_logic_vector(31 downto 0);
 
         -- lines/frame counter
-        BlackLinesCnt       : out   std_logic_vector(31 downto 0);
-        ImgLinesCnt         : out   std_logic_vector(31 downto 0);
+        BlackLinesCnt : out std_logic_vector(31 downto 0);
+        ImgLinesCnt   : out std_logic_vector(31 downto 0);
 
         -- pixels/frame counter
-        BlackPixelCnt       : out   std_logic_vector(31 downto 0);
-        ImgPixelCnt         : out   std_logic_vector(31 downto 0);
+        BlackPixelCnt : out std_logic_vector(31 downto 0);
+        ImgPixelCnt   : out std_logic_vector(31 downto 0);
 
         -- windows/frame counter
-        WindowsCnt          : out   std_logic_vector(31 downto 0);
+        WindowsCnt : out std_logic_vector(31 downto 0);
 
         -- clocks/frame counter -> fps
-        ClocksCnt           : out   std_logic_vector(31 downto 0);
+        ClocksCnt : out std_logic_vector(31 downto 0);
 
-        StartLineCnt        : out   std_logic_vector(31 downto 0);
-        EndLineCnt          : out   std_logic_vector(31 downto 0);
+        StartLineCnt : out std_logic_vector(31 downto 0);
+        EndLineCnt   : out std_logic_vector(31 downto 0);
 
         -- monitors
-        MONITOR             : in    std_logic_vector(1 downto 0);
+        MONITOR : in std_logic_vector(1 downto 0);
 
-        Monitor0HighCnt     : out   std_logic_vector(31 downto 0);
-        Monitor0LowCnt      : out   std_logic_vector(31 downto 0);
-        Monitor1HighCnt     : out   std_logic_vector(31 downto 0);
-        Monitor1LowCnt      : out   std_logic_vector(31 downto 0)
+        Monitor0HighCnt : out std_logic_vector(31 downto 0);
+        Monitor0LowCnt  : out std_logic_vector(31 downto 0);
+        Monitor1HighCnt : out std_logic_vector(31 downto 0);
+        Monitor1LowCnt  : out std_logic_vector(31 downto 0)
     );
 end syncchanneldecoder;
 
@@ -161,77 +160,77 @@ architecture rtl of syncchanneldecoder is
     alias ParOutChannel3 : std_logic_vector((DATAWIDTH-1) downto 0) is PAR_DATAOUT((DATAWIDTH-1)+3*DATAWIDTH downto 3*DATAWIDTH);
 
     type SyncDelayPipetp is array (0 to 5) of std_logic_vector((DATAWIDTH-1) downto 0);
-    signal SyncDelayPipe    : SyncDelayPipetp;
+    signal SyncDelayPipe : SyncDelayPipetp;
     type DataDelayPipetp is array (0 to SyncDelayPipe'high) of std_logic_vector(((NROF_CONN-1)*DATAWIDTH-1) downto 0);
-    signal DataDelayPipe   : DataDelayPipetp;
-    signal DataValidPipe    : std_logic_vector(0 to 5);
+    signal DataDelayPipe : DataDelayPipetp;
+    signal DataValidPipe : std_logic_vector(0 to 5);
 
-    constant zeros          : std_logic_vector((DATAWIDTH-1) downto 0) := (others => '0');
+    constant zeros : std_logic_vector((DATAWIDTH-1) downto 0) := (others => '0');
 
-    --signal extstartframe    : std_logic;
-    --signal intstartframe    : std_logic;
-    signal startframe       : std_logic;
+    --signal extstartframe : std_logic;
+    --signal intstartframe : std_logic;
+    signal startframe  : std_logic;
 
-    signal startwindow      : std_logic;
-    signal endwindow        : std_logic;
+    signal startwindow : std_logic;
+    signal endwindow   : std_logic;
 
-    signal startwindowid    : std_logic_vector(1023 downto 0);
-    signal endwindowid      : std_logic_vector(1023 downto 0);
+    signal startwindowid : std_logic_vector(1023 downto 0);
+    signal endwindowid   : std_logic_vector(1023 downto 0);
 
-    signal windowid         : std_logic_vector((DATAWIDTH-1) downto 0);
+    signal windowid : std_logic_vector((DATAWIDTH-1) downto 0);
 
-    signal startline        : std_logic;
-    signal endline          : std_logic;
+    signal startline : std_logic;
+    signal endline   : std_logic;
 
-    signal startblackline   : std_logic;
-    signal endblackline     : std_logic;
+    signal startblackline : std_logic;
+    signal endblackline   : std_logic;
 
-    signal startimageline   : std_logic;
-    signal endimageline     : std_logic;
+    signal startimageline : std_logic;
+    signal endimageline   : std_logic;
 
-    signal blackdatavalid   : std_logic;
-    signal imgdatavalid     : std_logic;
-    signal datavalid        : std_logic;
+    signal blackdatavalid : std_logic;
+    signal imgdatavalid   : std_logic;
+    signal datavalid      : std_logic;
 
-    signal crcvalid         : std_logic;
+    signal crcvalid : std_logic;
 
-    signal en_valid         : std_logic;
+    signal en_valid : std_logic;
 
-    --signal firststartframe  : std_logic;
-    --signal nextstartframe   : std_logic;
+    --signal firststartframe : std_logic;
+    --signal nextstartframe  : std_logic;
 
-    signal StartLineCntr    : std_logic_vector(31 downto 0);
-    signal EndLineCntr      : std_logic_vector(31 downto 0);
+    signal StartLineCntr : std_logic_vector(31 downto 0);
+    signal EndLineCntr   : std_logic_vector(31 downto 0);
 
-    signal rst_cntrs        : std_logic;
-    signal decode           : std_logic;
-    --signal dec              : std_logic;
-    signal enpipe           : std_logic_vector(15 downto 0);
-    signal syncvalid        : std_logic;
-    signal syncvalid_r      : std_logic;
+    signal rst_cntrs : std_logic;
+    signal decode    : std_logic;
+    --signal dec : std_logic;
+    signal enpipe      : std_logic_vector(15 downto 0);
+    signal syncvalid   : std_logic;
+    signal syncvalid_r : std_logic;
 
     -- framescounter
-    signal FramesCntr       : std_logic_vector(31 downto 0);
+    signal FramesCntr : std_logic_vector(31 downto 0);
 
     -- lines/frame counter
-    signal BlackLinesCntr   : std_logic_vector(31 downto 0);
-    signal ImgLinesCntr     : std_logic_vector(31 downto 0);
+    signal BlackLinesCntr : std_logic_vector(31 downto 0);
+    signal ImgLinesCntr   : std_logic_vector(31 downto 0);
 
     -- pixels/frame counter
-    signal BlackPixelCntr   : std_logic_vector(31 downto 0);
-    signal ImgPixelCntr     : std_logic_vector(31 downto 0);
+    signal BlackPixelCntr : std_logic_vector(31 downto 0);
+    signal ImgPixelCntr   : std_logic_vector(31 downto 0);
 
     -- windows/frame counter
-    signal WindowsCntr      : std_logic_vector(31 downto 0);
+    signal WindowsCntr : std_logic_vector(31 downto 0);
 
     -- clocks/frame counter -> fps
-    signal ClocksCntr       : std_logic_vector(31 downto 0);
-    --signal ClocksCnt        : std_logic_vector(31 downto 0);
+    signal ClocksCntr : std_logic_vector(31 downto 0);
+    --signal ClocksCnt : std_logic_vector(31 downto 0);
 
     type DataStatetp is (
-                                Idle,
-                                Valid
-                            );
+                            Idle,
+                            Valid
+                        );
 
     signal BlackDataState : DataStatetp;
     signal ImgDataState   : DataStatetp;
@@ -257,23 +256,23 @@ architecture rtl of syncchanneldecoder is
     signal Monitor1LowCntr  : std_logic_vector(31 downto 0);
 
 
-    signal monitor_rising   : std_logic_vector(1 downto 0);
-    signal monitor_falling  : std_logic_vector(1 downto 0);
+    signal monitor_rising  : std_logic_vector(1 downto 0);
+    signal monitor_falling : std_logic_vector(1 downto 0);
 
     type Monitor_synctp is array (2 downto 0) of std_logic_vector(1 downto 0);
     signal Monitor_sync : Monitor_synctp;
 
 begin
 
-    PAR_DATA_RDEN   <= enpipe(4);
-    en_valid        <= enpipe(15) and en_decoder;
-    syncvalid       <= not PAR_DATA_EMPTY;
-    syncvalid_r     <= DataValidPipe(0);
+    PAR_DATA_RDEN <= enpipe(4);
+    en_valid      <= enpipe(15) and en_decoder;
+    syncvalid     <= not PAR_DATA_EMPTY;
+    syncvalid_r   <= DataValidPipe(0);
 
     EnPipePr: process(RESET, CLOCK)
     begin
         if (RESET = '1') then
-            enpipe  <= (others => '0');
+            enpipe <= (others => '0');
         elsif (CLOCK'event and CLOCK = '1') then
 
             enpipe(0) <= en_decoder;
@@ -288,18 +287,18 @@ begin
     DataPipe: process(RESET, CLOCK)
     begin
         if (RESET = '1') then
-            SyncDelayPipe   <= (others => (others => '0'));
-            PAR_SYNCOUT     <= (others => '0');
+            SyncDelayPipe <= (others => (others => '0'));
+            PAR_SYNCOUT   <= (others => '0');
             -- DataDelayPipe doesnt need reset state
-            DataValidPipe   <= (others => '0');
+            DataValidPipe <= (others => '0');
 
-            PAR_DATA_LINE       <= '0';
-            PAR_DATA_FRAME      <= '0';
+            PAR_DATA_LINE  <= '0';
+            PAR_DATA_FRAME <= '0';
 
         elsif (CLOCK'event and CLOCK = '1') then
 
-            PAR_DATA_LINE        <= (startimageline or startblackline) and syncvalid_r; --needs one cycle delay
-            PAR_DATA_FRAME       <= startframe and syncvalid_r;
+            PAR_DATA_LINE  <= (startimageline or startblackline) and syncvalid_r; --needs one cycle delay
+            PAR_DATA_FRAME <= startframe and syncvalid_r;
 
             if (PAR_DATA_EMPTY = '0') then
                 SyncDelayPipe(0) <= SyncChannel;
@@ -322,23 +321,23 @@ begin
         end if;
     end process;
 
-    PAR_DATA_IMGVALID      <= imgdatavalid and DataValidPipe(1);
-    PAR_DATA_BLACKVALID    <= blackdatavalid and DataValidPipe(1);
+    PAR_DATA_IMGVALID   <= imgdatavalid and DataValidPipe(1);
+    PAR_DATA_BLACKVALID <= blackdatavalid and DataValidPipe(1);
 
 
     framestart <= startframe;
 
     windowstart <= startwindow;
-    windowend <= endwindow;
+    windowend   <= endwindow;
 
     linestart <= startline;
-    lineend <= endline;
+    lineend   <= endline;
 
     blacklinestart <= startblackline;
-    blacklineend <= endblackline;
+    blacklineend   <= endblackline;
 
     imagelinestart <= startimageline;
-    imagelineend <= endimageline;
+    imagelineend   <= endimageline;
 
     validcrc <= crcvalid and DataValidPipe(1);
 
@@ -351,47 +350,47 @@ begin
 
     -- pixels/frame count
     BlackPixelCnt <= BlackPixelCntr;
-    ImgPixelCnt <= ImgPixelCntr;
+    ImgPixelCnt   <= ImgPixelCntr;
 
     -- windows/frame count
     WindowsCnt <= WindowsCntr;
 
     --
-    StartLineCnt    <= StartLineCntr;
-    EndLineCnt      <= EndLineCntr;
+    StartLineCnt <= StartLineCntr;
+    EndLineCnt   <= EndLineCntr;
 
     --extstartframe <= nextstartframe or firststartframe;
 
     Decoder: process(RESET, CLOCK)
     begin
         if (RESET = '1') then
-            startframe          <= '0';
-            startwindow         <= '0';
-            endwindow           <= '0';
-            startline           <= '0';
-            startblackline      <= '0';
-            startimageline      <= '0';
-            endline             <= '0';
-            endblackline        <= '0';
-            endimageline        <= '0';
+            startframe     <= '0';
+            startwindow    <= '0';
+            endwindow      <= '0';
+            startline      <= '0';
+            startblackline <= '0';
+            startimageline <= '0';
+            endline        <= '0';
+            endblackline   <= '0';
+            endimageline   <= '0';
 
-            datavalid           <= '0';
-            blackdatavalid      <= '0';
-            imgdatavalid        <= '0';
+            datavalid      <= '0';
+            blackdatavalid <= '0';
+            imgdatavalid   <= '0';
 
-            crcvalid            <= '0';
+            crcvalid <= '0';
 
-            -- StartFrameState     <= Idle;
-            BlackDataState      <= Idle;
+            -- StartFrameState <= Idle;
+            BlackDataState <= Idle;
 
-            windowid            <= (others => '0');
-            startwindowid       <= (others => '0');
-            endwindowid         <= (others => '0');
+            windowid      <= (others => '0');
+            startwindowid <= (others => '0');
+            endwindowid   <= (others => '0');
 
-            -- firststartframe     <= '0';
-            -- nextstartframe      <= '0';
+            -- firststartframe <= '0';
+            -- nextstartframe  <= '0';
 
-            decode              <= '0';
+            decode <= '0';
 
         elsif (CLOCK'event and CLOCK = '1') then
 
@@ -402,7 +401,7 @@ begin
             --framedetection for decoder enabler
             -- startframe is detected 2 clks before internal startframe, should be enough
 
-            --firststartframe   <= '0';
+            --firststartframe <= '0';
 
             if (en_valid = '1') then
                 --if (syncvalid = '1') then
@@ -415,13 +414,13 @@ begin
 
                         when DetectEnableStart =>
                             if (SyncDelayPipe(0) = FS_value(9 downto (10-DATAWIDTH))) then
-                                decode                 <= '1';
-                                --firststartframe     <= '1';
+                                decode <= '1';
+                                --firststartframe <= '1';
                                 DecoderEnablerState <= Enabled;
                             end if;
 
                         when Enabled =>
-                            decode          <= '1';
+                            decode <= '1';
 
                         when others =>
                             DecoderEnablerState <= Idle;
@@ -434,40 +433,40 @@ begin
 
 
             if (decode = '1') then
-                startframe     <= '0';
+                startframe <= '0';
                 if (SyncDelayPipe(2) = FS_value(9 downto (10-DATAWIDTH)) and SyncDelayPipe(1) = zeros(9 downto (10-DATAWIDTH) )) then
-                    startframe  <= '1';
+                    startframe <= '1';
                 end if;
             else
-                startframe     <= '0';
+                startframe <= '0';
             end if;
             -- frameend detect, not feasible without software...
 
             --start window detection
             if (decode = '1') then
-                startwindow     <= '0';
-                startwindowid   <= (others => '0');
+                startwindow   <= '0';
+                startwindowid <= (others => '0');
                 if (SyncDelayPipe(2) = FS_value(9 downto (10-DATAWIDTH))) then
-                    startwindow  <= '1';
+                    startwindow <= '1';
                     startwindowid( TO_INTEGER(UNSIGNED(SyncDelayPipe(1))) ) <= '1';
-                    windowid     <= SyncDelayPipe(1);
+                    windowid <= SyncDelayPipe(1);
                 end if;
             else
-                startwindow     <= '0';
-                startwindowid   <= (others => '0');
+                startwindow   <= '0';
+                startwindowid <= (others => '0');
             end if;
 
             --end window detection
             if (decode = '1') then
-                endwindow       <= '0';
-                endwindowid     <= (others => '0');
+                endwindow   <= '0';
+                endwindowid <= (others => '0');
                 if (SyncDelayPipe(4) = FE_value(9 downto (10-DATAWIDTH))) then
                     endwindow <= '1';
                     endwindowid(TO_INTEGER(UNSIGNED(SyncDelayPipe(3))) ) <= '1';
                 end if;
             else
-                endwindowid     <= (others => '0');
-                endwindow <= '0';
+                endwindowid <= (others => '0');
+                endwindow   <= '0';
             end if;
 
             -- start line pulse generation
@@ -629,20 +628,20 @@ begin
     begin
         if (RESET = '1') then
 
-            StartLineCntr  <= (others => '0');
-            EndLineCntr <= (others => '0');
+            StartLineCntr <= (others => '0');
+            EndLineCntr   <= (others => '0');
 
             rst_cntrs <= '0';
 
-            FramesCntr <= (others => '0');
+            FramesCntr     <= (others => '0');
             BlackLinesCntr <= (others => '0');
-            ImgLinesCntr <= (others => '0');
+            ImgLinesCntr   <= (others => '0');
             BlackPixelCntr <= (others => '0');
-            ImgPixelCntr <= (others => '0');
+            ImgPixelCntr   <= (others => '0');
 
             WindowsCntr <= (others => '0');
-            ClocksCntr <= (others => '0');
-            ClocksCnt <= (others => '0');
+            ClocksCntr  <= (others => '0');
+            ClocksCnt   <= (others => '0');
         elsif (CLOCK'event and CLOCK = '1') then
 
             -- counter rst logic
@@ -682,27 +681,27 @@ begin
             -- counts total amount of blacklines
 
             if (rst_cntrs = '1') then
-                BlackLinesCntr      <= (others => '0');
-                blacklinecntstate   <= WaitFirstBlackLine;
+                BlackLinesCntr    <= (others => '0');
+                blacklinecntstate <= WaitFirstBlackLine;
             else
                 if (syncvalid_r = '1') then
                     case blacklinecntstate is
 
                         when WaitFirstBlackLine =>
                             if (startblackline = '1') then
-                                BlackLinesCntr      <= X"00000001";
-                                blacklinecntstate   <= CountBlackLines;
+                                BlackLinesCntr    <= X"00000001";
+                                blacklinecntstate <= CountBlackLines;
                             end if;
 
                         when CountBlackLines =>
                             if (startblackline = '1') then
-                                BlackLinesCntr      <= BlackLinesCntr + '1';
+                                BlackLinesCntr <= BlackLinesCntr + '1';
                             elsif (startimageline = '1') then
-                                blacklinecntstate   <= WaitFirstBlackLine;
+                                blacklinecntstate <= WaitFirstBlackLine;
                             end if;
 
                         when others =>
-                            blacklinecntstate   <= WaitFirstBlackLine;
+                            blacklinecntstate <= WaitFirstBlackLine;
 
                     end case;
                 end if;
@@ -711,7 +710,7 @@ begin
             if (rst_cntrs = '1' or (startframe = '1' and decode = '1')) then
                 ImgLinesCntr <= (others => '0');
             else
-                if (syncvalid_r = '1'  and decode = '1') then
+                if (syncvalid_r = '1' and decode = '1') then
                     if (startimageline = '1') then
                         ImgLinesCntr <= ImgLinesCntr + '1';
                     end if;
@@ -770,10 +769,10 @@ begin
             KERNEL_ODD_EVEN <= '0';
             START_KERNEL    <= '0';
         elsif(CLOCK = '1' and CLOCK'event) then
-            START_KERNEL    <= '0';
+            START_KERNEL <= '0';
             if (startwindow = '1') then
                 KERNEL_ODD_EVEN <= StartOddEven(to_integer(unsigned(windowid(4 downto 0))));
-                START_KERNEL    <= '1';
+                START_KERNEL <= '1';
             end if;
         end if;
     end process;
@@ -786,29 +785,29 @@ begin
         begin
             if (RESET = '1') then
 
-                Monitor0HighCntr    <= (others => '0');
-                Monitor0LowCntr     <= (others => '0');
-                Monitor1HighCntr    <= (others => '0');
-                Monitor1LowCntr     <= (others => '0');
+                Monitor0HighCntr <= (others => '0');
+                Monitor0LowCntr  <= (others => '0');
+                Monitor1HighCntr <= (others => '0');
+                Monitor1LowCntr  <= (others => '0');
 
-                Monitor0HighCnt     <= (others => '0');
-                Monitor0LowCnt      <= (others => '0');
-                Monitor1HighCnt     <= (others => '0');
-                Monitor1LowCnt      <= (others => '0');
+                Monitor0HighCnt <= (others => '0');
+                Monitor0LowCnt  <= (others => '0');
+                Monitor1HighCnt <= (others => '0');
+                Monitor1LowCnt  <= (others => '0');
 
                 for i in 0 to 1 loop
-                    monitor_rising(i)   <= '0';
-                    monitor_falling(i)  <= '0';
+                    monitor_rising(i)  <= '0';
+                    monitor_falling(i) <= '0';
                 end loop;
 
-                Monitor_sync        <= (others => (others => '0'));
+                Monitor_sync <= (others => (others => '0'));
 
             elsif(CLOCK = '1' and CLOCK'event) then
 
                 --defaults
 
-                Monitor_sync(0)(0)  <= MONITOR(0);
-                Monitor_sync(0)(1)  <= MONITOR(1);
+                Monitor_sync(0)(0) <= MONITOR(0);
+                Monitor_sync(0)(1) <= MONITOR(1);
 
                 for i in 0 to (Monitor_sync'high - 1) loop
                     Monitor_sync(i+1) <= Monitor_sync(i);
@@ -817,11 +816,11 @@ begin
                 -- monitor counters
                 for i in 0 to 1 loop
                 --defaults
-                monitor_rising(i)   <= '0';
-                monitor_falling(i)  <= '0';
+                monitor_rising(i)  <= '0';
+                monitor_falling(i) <= '0';
                     if (decode = '1') then
                         if (Monitor_sync(2)(i) = '0' and Monitor_sync(1)(i) = '1') then --rising edge
-                            monitor_rising(i) <= '1';
+                            monitor_rising(i)  <= '1';
                         elsif (Monitor_sync(2)(0) = '1' and Monitor_sync(1)(i) = '0') then --falling edge
                             monitor_falling(i) <= '1';
                         end if;
@@ -830,28 +829,28 @@ begin
 
                 if (decode = '1') then
                     if (monitor_rising(0) = '1') then
-                        Monitor0HighCnt <= Monitor0HighCntr;
+                        Monitor0HighCnt  <= Monitor0HighCntr;
                         Monitor0HighCntr <= (others => '0');
                     elsif (Monitor_sync(2)(0) = '1') then
                         Monitor0HighCntr <= Monitor0HighCntr + '1';
                     end if;
 
                     if (monitor_falling(0) = '1') then
-                        Monitor0LowCnt <= Monitor0LowCntr;
+                        Monitor0LowCnt  <= Monitor0LowCntr;
                         Monitor0LowCntr <= (others => '0');
                     elsif (Monitor_sync(2)(0) = '0') then
                         Monitor0LowCntr <= Monitor0LowCntr + '1';
                     end if;
 
                     if (monitor_rising(1) = '1') then
-                        Monitor1HighCnt <= Monitor1HighCntr;
+                        Monitor1HighCnt  <= Monitor1HighCntr;
                         Monitor1HighCntr <= (others => '0');
                     elsif (Monitor_sync(2)(1) = '1') then
                         Monitor1HighCntr <= Monitor1HighCntr + '1';
                     end if;
 
                     if (monitor_falling(1) = '1') then
-                        Monitor1LowCnt <= Monitor1LowCntr;
+                        Monitor1LowCnt  <= Monitor1LowCntr;
                         Monitor1LowCntr <= (others => '0');
                     elsif (Monitor_sync(2)(1) = '0') then
                         Monitor1LowCntr <= Monitor1LowCntr + '1';

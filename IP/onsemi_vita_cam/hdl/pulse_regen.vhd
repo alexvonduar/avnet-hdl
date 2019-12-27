@@ -39,17 +39,17 @@ use xpm.vcomponents.all;
 entity pulse_regen is
     generic
     (
-        C_FAMILY                  : string               := "zynq"
+        C_FAMILY : string := "zynq"
     );
     port
     (
-        rst                     : IN std_logic;
+        rst : IN std_logic;
 
-        clk1                    : IN std_logic;
-        pulse1                  : IN std_logic;
+        clk1   : IN std_logic;
+        pulse1 : IN std_logic;
 
-        clk2                    : IN std_logic;
-        pulse2                  : OUT std_logic
+        clk2   : IN std_logic;
+        pulse2 : OUT std_logic
     );
 end entity pulse_regen;
 
@@ -64,46 +64,46 @@ begin
     pulse_regen_l : xpm_fifo_async
     generic map (
 
-        FIFO_MEMORY_TYPE        => "auto",           --string; "auto", "block", or "distributed";
-        ECC_MODE                => "no_ecc",         --string; "no_ecc" or "en_ecc";
-        RELATED_CLOCKS          => 0,                --positive integer; 0 or 1
-        FIFO_WRITE_DEPTH        => 16,               --positive integer
-        WRITE_DATA_WIDTH        => 1,                --positive integer
-        WR_DATA_COUNT_WIDTH     => 4,                --positive integer
-        PROG_FULL_THRESH        => 8,                --positive integer
-        FULL_RESET_VALUE        => 0,                --positive integer; 0 or 1;
-        READ_MODE               => "fwft",           --string; "std" (standard) or "fwft" (first-word-fall-through);
-        FIFO_READ_LATENCY       => 1,                --positive integer;
-        READ_DATA_WIDTH         => 1,                --positive integer
-        RD_DATA_COUNT_WIDTH     => 4,                --positive integer
-        PROG_EMPTY_THRESH       => 8,                --positive integer
-        DOUT_RESET_VALUE        => "0",              --string
-        CDC_SYNC_STAGES         => 2,                --positive integer
-        WAKEUP_TIME             => 0                 --positive integer; 0 or 2;
+        FIFO_MEMORY_TYPE    => "auto",   --string; "auto", "block", or "distributed";
+        ECC_MODE            => "no_ecc", --string; "no_ecc" or "en_ecc";
+        RELATED_CLOCKS      => 0,        --positive integer; 0 or 1
+        FIFO_WRITE_DEPTH    => 16,       --positive integer
+        WRITE_DATA_WIDTH    => 1,        --positive integer
+        WR_DATA_COUNT_WIDTH => 4,        --positive integer
+        PROG_FULL_THRESH    => 8,        --positive integer
+        FULL_RESET_VALUE    => 0,        --positive integer; 0 or 1;
+        READ_MODE           => "fwft",   --string; "std" (standard) or "fwft" (first-word-fall-through);
+        FIFO_READ_LATENCY   => 1,        --positive integer;
+        READ_DATA_WIDTH     => 1,        --positive integer
+        RD_DATA_COUNT_WIDTH => 4,        --positive integer
+        PROG_EMPTY_THRESH   => 8,        --positive integer
+        DOUT_RESET_VALUE    => "0",      --string
+        CDC_SYNC_STAGES     => 2,        --positive integer
+        WAKEUP_TIME         => 0         --positive integer; 0 or 2;
     )
     port map (
-        sleep            => '0',
-        rst              => rst,
-        wr_clk           => clk1,
-        wr_en            => pulse1,
-        din              => (others => '1'),
-        full             => open,
-        overflow         => open,
-        wr_rst_busy      => open,
-        rd_clk           => clk2,
-        rd_en            => '1',
-        dout             => open,
-        empty            => rd_empty,
-        underflow        => open,
-        rd_rst_busy      => open,
-        prog_full        => open,
-        wr_data_count    => open,
-        prog_empty       => open,
-        rd_data_count    => open,
-        injectsbiterr    => '0',
-        injectdbiterr    => '0',
-        sbiterr          => open,
-        dbiterr          => open
+        sleep         => '0',
+        rst           => rst,
+        wr_clk        => clk1,
+        wr_en         => pulse1,
+        din           => (others => '1'),
+        full          => open,
+        overflow      => open,
+        wr_rst_busy   => open,
+        rd_clk        => clk2,
+        rd_en         => '1',
+        dout          => open,
+        empty         => rd_empty,
+        underflow     => open,
+        rd_rst_busy   => open,
+        prog_full     => open,
+        wr_data_count => open,
+        prog_empty    => open,
+        rd_data_count => open,
+        injectsbiterr => '0',
+        injectdbiterr => '0',
+        sbiterr       => open,
+        dbiterr       => open
     );
 
     pulse2 <= not rd_empty;

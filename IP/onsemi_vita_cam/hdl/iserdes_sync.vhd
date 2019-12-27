@@ -191,7 +191,7 @@ begin
             FIFO_RESET          <= FIFO_RESET_r;
             FIFO_WREN_r         <= CTRL_FIFO_WREN;
 
-        -- wr_en ctrl
+            -- wr_en ctrl
             if (CTRL_DELAY_WREN = '1') then --special case
                 for i in 0 to NROF_CONN-1 loop
                     if ( CTRL_SAMPLEINFIRSTBIT(i) = '1') then -- delay wr extra

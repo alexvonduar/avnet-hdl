@@ -56,19 +56,19 @@ use work.PCK_CRC8_D8.all;
 -----------------------
 entity crc_calc is
     generic (
-        DATAWIDTH       : integer ;
-        POLYNOMIAL      : std_logic_vector := "11001001111";
-        USE_CRC_TOOL    : boolean := TRUE
+        DATAWIDTH    : integer ;
+        POLYNOMIAL   : std_logic_vector := "11001001111";
+        USE_CRC_TOOL : boolean := TRUE
     );
     port ( -- System
-        --    APP_CFG_REG      : in    AppCfgRegTp;
-        INITVALUE     : in  std_logic;
-        CLOCK         : in  std_logic;
-        RESET         : in  std_logic;
+        --APP_CFG_REG : in AppCfgRegTp;
+        INITVALUE : in std_logic;
+        CLOCK     : in std_logic;
+        RESET     : in std_logic;
         -- Data input
-        INIT          : in  std_logic;
-        DATA_IN       : in  std_logic_vector(DATAWIDTH-1 downto 0);
-        CRC_OUT       : out std_logic_vector(DATAWIDTH-1 downto 0)
+        INIT    : in  std_logic;
+        DATA_IN : in  std_logic_vector(DATAWIDTH-1 downto 0);
+        CRC_OUT : out std_logic_vector(DATAWIDTH-1 downto 0)
     );
 end;
 
@@ -91,13 +91,10 @@ architecture rtl of crc_calc is
     -------------------------------
     type temptp is array (DATAWIDTH downto 0) of std_logic_vector(DATAWIDTH downto 0);
 
-    signal  CRC_own            : std_logic_vector(DATAWIDTH-1 downto 0);
-    signal  CRC_tool           : unsigned(DATAWIDTH-1 downto 0);
-
-
+    signal  CRC_own  : std_logic_vector(DATAWIDTH-1 downto 0);
+    signal  CRC_tool : unsigned(DATAWIDTH-1 downto 0);
 
     signal tmparray : temptp;
-
 
 --------------------
 -- MAIN BEHAVIOUR --
@@ -109,15 +106,15 @@ begin
 
     CRCModule:process(CLOCK, RESET)
 
-    variable CRC_own_i    : std_logic_vector(DATAWIDTH downto 0);
+    variable CRC_own_i : std_logic_vector(DATAWIDTH downto 0);
     variable temp      : std_logic_vector(DATAWIDTH downto 0);
 
     begin
         if (RESET ='1') then
-            CRC_own_i         := (others => '1');
+            CRC_own_i := (others => '1');
 
-            CRC_tool          <= (others => '1');
-            CRC_own           <= (others => '1');
+            CRC_tool  <= (others => '1');
+            CRC_own   <= (others => '1');
             --
         elsif (CLOCK'event and CLOCK = '1') then
 
@@ -126,42 +123,42 @@ begin
 
     --        if (INIT='1' and APP_CFG_REG.sysmode(7) = '0') then
             if (INIT='1' and INITVALUE = '0') then
-                CRC_tool            <= (others => '1');  --CRC tool by easics
+                CRC_tool  <= (others => '1'); --CRC tool by easics
 
-                CRC_own             <= (others => '1');  --own implementation
-                CRC_own_i           := (others => '1');
+                CRC_own   <= (others => '1'); --own implementation
+                CRC_own_i := (others => '1');
 
     --        elsif ( INIT='1' and APP_CFG_REG.sysmode(7) = '1') then
             elsif ( INIT='1' and INITVALUE = '1') then
-                CRC_tool            <= (others => '0');  --CRC tool by easics
+                CRC_tool  <= (others => '0'); --CRC tool by easics
 
-                CRC_own             <= (others => '0');  --own implementation
-                CRC_own_i           := (others => '0');
+                CRC_own   <= (others => '0'); --own implementation
+                CRC_own_i := (others => '0');
             else
 
                 CRC_own_i(DATAWIDTH-1 downto 0) := DATA_IN xor CRC_own_i(DATAWIDTH downto 1);
-                CRC_own_i(DATAWIDTH)            := '0';
+                CRC_own_i(DATAWIDTH) := '0';
 
                 for i in (DATAWIDTH) downto 0 loop
 
                     if (CRC_own_i(CRC_own_i'high) = '1') then
-                        temp             := (CRC_own_i xor POLYNOMIAL);
-                        CRC_own_i        := (temp(DATAWIDTH-1 downto 0) & '0');
+                        temp      := (CRC_own_i xor POLYNOMIAL);
+                        CRC_own_i := (temp(DATAWIDTH-1 downto 0) & '0');
 
-                        tmparray(DATAWIDTH-i)     <= temp;
+                        tmparray(DATAWIDTH-i) <= temp;
 
                     else
-                        CRC_own_i        := (CRC_own_i(DATAWIDTH-1 downto 0) & '0');
+                        CRC_own_i := (CRC_own_i(DATAWIDTH-1 downto 0) & '0');
                     end if;
                 end loop;
 
                 if (DATAWIDTH = 10) then
-                    CRC_tool   <= nextCRC10_D10(unsigned(DATA_IN),unsigned(CRC_tool));   --CRC tool by easics
+                    CRC_tool <= nextCRC10_D10(unsigned(DATA_IN),unsigned(CRC_tool)); --CRC tool by easics
                 else
-                    CRC_tool   <= nextCRC8_D8(unsigned(DATA_IN),unsigned(CRC_tool));  --CRC tool by easics
+                    CRC_tool <= nextCRC8_D8(unsigned(DATA_IN),unsigned(CRC_tool)); --CRC tool by easics
                 end if;
 
-                CRC_own    <= CRC_own_i(DATAWIDTH downto 1);    --own implementation
+                CRC_own <= CRC_own_i(DATAWIDTH downto 1); --own implementation
             end if;
 
         end if;

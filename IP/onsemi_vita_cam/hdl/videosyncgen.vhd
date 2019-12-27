@@ -29,26 +29,26 @@
 --
 -------------------------------------------------------------------------------
 --
--- Create Date:         Dec 03, 2009
--- Design Name:         IVK
--- Module Name:         ivk_video_gen\videosyncgen.vhd
--- Project Name:        IVK
--- Target Devices:      Spartan-6
--- Avnet Boards:        IVK
+-- Create Date:    Dec 03, 2009
+-- Design Name:    IVK
+-- Module Name:    ivk_video_gen\videosyncgen.vhd
+-- Project Name:   IVK
+-- Target Devices: Spartan-6
+-- Avnet Boards:   IVK
 --
--- Tool versions:       ISE 11.4
+-- Tool versions: ISE 11.4
 --
--- Description:         Video Synchronization Generator
+-- Description: Video Synchronization Generator
 --
 -- Dependencies:
 --
--- Revision:            Dec 03, 2009: 1.00 Initial version
---                      Feb 08, 2010: 1.02 Add generation of VBLANK/HBLANK
---                      Jan 12, 2012: 1.07 Modify syncgen for vita receiver
---                                         - fix DE generation
---                                           (active for VActive lines instead of VActive-1)
---                                         - fix v_VCount_s
---                                         - disable auto restart
+-- Revision: Dec 03, 2009: 1.00 Initial version
+--           Feb 08, 2010: 1.02 Add generation of VBLANK/HBLANK
+--           Jan 12, 2012: 1.07 Modify syncgen for vita receiver
+--               - fix DE generation
+--                 (active for VActive lines instead of VActive-1)
+--               - fix v_VCount_s
+--               - disable auto restart
 --
 ------------------------------------------------------------------
 
@@ -58,40 +58,40 @@ use ieee.numeric_std.all;
 
 entity VideoSyncGen is
     generic (
-        HWidth_g                   : integer := 16;
-        VWidth_g                   : integer := 16
+        HWidth_g : integer := 16;
+        VWidth_g : integer := 16
     );
 
     port (
         -- Global Reset
-        i_Clk_p                    : in std_logic;
-        i_Reset_p                  : in std_logic;
+        i_Clk_p   : in std_logic;
+        i_Reset_p : in std_logic;
 
         --
-        i_Restart_p                : in std_logic;
+        i_Restart_p : in std_logic;
 
         -- Video Configuration
-        iv16_VidHActive_p          : in std_logic_vector(15 downto 0);
-        iv16_VidHFPorch_p          : in std_logic_vector(15 downto 0);
-        iv16_VidHSync_p            : in std_logic_vector(15 downto 0);
-        iv16_VidHBPorch_p          : in std_logic_vector(15 downto 0);
+        iv16_VidHActive_p : in std_logic_vector(15 downto 0);
+        iv16_VidHFPorch_p : in std_logic_vector(15 downto 0);
+        iv16_VidHSync_p   : in std_logic_vector(15 downto 0);
+        iv16_VidHBPorch_p : in std_logic_vector(15 downto 0);
         --
-        iv16_VidVActive_p          : in std_logic_vector(15 downto 0);
-        iv16_VidVFPorch_p          : in std_logic_vector(15 downto 0);
-        iv16_VidVSync_p            : in std_logic_vector(15 downto 0);
-        iv16_VidVBPorch_p          : in std_logic_vector(15 downto 0);
+        iv16_VidVActive_p : in std_logic_vector(15 downto 0);
+        iv16_VidVFPorch_p : in std_logic_vector(15 downto 0);
+        iv16_VidVSync_p   : in std_logic_vector(15 downto 0);
+        iv16_VidVBPorch_p : in std_logic_vector(15 downto 0);
 
         -- Video Synchronization Signals
-        o_HSync_p                  : out std_logic;
-        o_VSync_p                  : out std_logic;
-        o_De_p                     : out std_logic;
-        o_HBlank_p                 : out std_logic;
-        o_VBlank_p                 : out std_logic;
+        o_HSync_p  : out std_logic;
+        o_VSync_p  : out std_logic;
+        o_De_p     : out std_logic;
+        o_HBlank_p : out std_logic;
+        o_VBlank_p : out std_logic;
 
         -- Data Request strobe (1 cycle in advance of synchronization signals)
-        ov_HCount_p                : out std_logic_vector(HWidth_g-1 downto 0);
-        ov_VCount_p                : out std_logic_vector(VWidth_g-1 downto 0);
-        o_PixelRequest_p           : out std_logic
+        ov_HCount_p      : out std_logic_vector(HWidth_g-1 downto 0);
+        ov_VCount_p      : out std_logic_vector(VWidth_g-1 downto 0);
+        o_PixelRequest_p : out std_logic
     );
 end entity VideoSyncGen;
 
@@ -102,16 +102,16 @@ architecture rtl of VideoSyncGen is
     --
 
     -- Video Synchronization Signals
-    signal HSync_s                   : std_logic;
-    signal VSync_s                   : std_logic;
-    signal De_s                      : std_logic;
-    signal HBlank_s                  : std_logic;
-    signal VBlank_s                  : std_logic;
+    signal HSync_s  : std_logic;
+    signal VSync_s  : std_logic;
+    signal De_s     : std_logic;
+    signal HBlank_s : std_logic;
+    signal VBlank_s : std_logic;
 
     -- Data Request strobe (1 cycle in advance of synchronization signals)
-    signal v_HCount_s                : unsigned(HWidth_g-1 downto 0);
-    signal v_VCount_s                : unsigned(VWidth_g-1 downto 0);
-    signal PixelRequest_s            : std_logic;
+    signal v_HCount_s     : unsigned(HWidth_g-1 downto 0);
+    signal v_VCount_s     : unsigned(VWidth_g-1 downto 0);
+    signal PixelRequest_s : std_logic;
 
 
     --
@@ -124,28 +124,28 @@ architecture rtl of VideoSyncGen is
         BackPorch_c,
         ActiveVideo_c
     );
-    signal HSyncState_s              : SyncState_t;
-    signal VSyncState_s              : SyncState_t;
-    signal VSyncStateD1_s            : SyncState_t;
+    signal HSyncState_s   : SyncState_t;
+    signal VSyncState_s   : SyncState_t;
+    signal VSyncStateD1_s : SyncState_t;
 
-    attribute fsm_encoding           : string;
+    attribute fsm_encoding : string;
     attribute fsm_encoding of HSyncState_s : signal is "sequential";
     attribute fsm_encoding of VSyncState_s : signal is "sequential";
-    attribute safe_implementation    : string;
+    attribute safe_implementation : string;
     attribute safe_implementation of HSyncState_s : signal is "yes";
     attribute safe_implementation of VSyncState_s : signal is "yes";
 
-    signal v_HSyncCount_s            : unsigned(HWidth_g+1 downto 0);
-    signal v_VSyncCount_s            : unsigned(VWidth_g+1 downto 0);
+    signal v_HSyncCount_s : unsigned(HWidth_g+1 downto 0);
+    signal v_VSyncCount_s : unsigned(VWidth_g+1 downto 0);
 
-    signal HSyncDone_s               : std_logic;
-    signal VSyncDone_s               : std_logic;
+    signal HSyncDone_s : std_logic;
+    signal VSyncDone_s : std_logic;
 
-    signal HSyncA1_s                 : std_logic;
-    signal VSyncA1_s                 : std_logic;
-    signal DeA1_s                    : std_logic;
-    signal HBlankA1_s                : std_logic;
-    signal VBlankA1_s                : std_logic;
+    signal HSyncA1_s  : std_logic;
+    signal VSyncA1_s  : std_logic;
+    signal DeA1_s     : std_logic;
+    signal HBlankA1_s : std_logic;
+    signal VBlankA1_s : std_logic;
 
 begin
 
@@ -154,16 +154,16 @@ begin
     --
 
     -- Video Synchronization Signals
-    o_VSync_p                     <= VSync_s;
-    o_HSync_p                     <= HSync_s;
-    o_De_p                        <= De_s;
-    o_HBlank_p                    <= HBlank_s;
-    o_VBlank_p                    <= VBlank_s;
+    o_VSync_p  <= VSync_s;
+    o_HSync_p  <= HSync_s;
+    o_De_p     <= De_s;
+    o_HBlank_p <= HBlank_s;
+    o_VBlank_p <= VBlank_s;
 
     -- Data Request strobe (1 cycle in advance of synchronization signals)
-    ov_HCount_p                   <= std_logic_vector(v_HCount_s);
-    ov_VCount_p                   <= std_logic_vector(v_VCount_s);
-    o_PixelRequest_p              <= PixelRequest_s;
+    ov_HCount_p      <= std_logic_vector(v_HCount_s);
+    ov_VCount_p      <= std_logic_vector(v_VCount_s);
+    o_PixelRequest_p <= PixelRequest_s;
 
     --
     -- HSync State Machine
@@ -172,16 +172,16 @@ begin
     HSyncFsm_l : process ( i_Clk_p, i_Reset_p )
     begin
         if ( i_Reset_p = '1' ) then
-            HSyncState_s      <= FrontPorch_c;
-            v_HSyncCount_s    <= (others => '0');
-            HSyncA1_s         <= '0';
-            DeA1_s            <= '0';
-            HBlankA1_s        <= '0';
-            HSync_s           <= '0';
-            De_s              <= '0';
-            HBlank_s          <= '0';
-            v_HCount_s        <= (others => '0');
-            HSyncDone_s       <= '0';
+            HSyncState_s   <= FrontPorch_c;
+            v_HSyncCount_s <= (others => '0');
+            HSyncA1_s      <= '0';
+            DeA1_s         <= '0';
+            HBlankA1_s     <= '0';
+            HSync_s        <= '0';
+            De_s           <= '0';
+            HBlank_s       <= '0';
+            v_HCount_s     <= (others => '0');
+            HSyncDone_s    <= '0';
         elsif rising_edge( i_Clk_p ) then
 
             if ( i_Restart_p = '1' ) then
@@ -274,15 +274,15 @@ begin
     VSyncFsm_l : process ( i_Clk_p, i_Reset_p )
     begin
         if ( i_Reset_p = '1' ) then
-            VSyncState_s      <= FrontPorch_c;
-            VSyncStateD1_s    <= FrontPorch_c;
-            v_VSyncCount_s    <= (others => '0');
-            VSyncA1_s         <= '0';
-            VBlankA1_s        <= '0';
-            VSync_s           <= '0';
-            VBlank_s          <= '0';
-            v_VCount_s        <= (others => '0');
-            VSyncDone_s       <= '0';
+            VSyncState_s   <= FrontPorch_c;
+            VSyncStateD1_s <= FrontPorch_c;
+            v_VSyncCount_s <= (others => '0');
+            VSyncA1_s      <= '0';
+            VBlankA1_s     <= '0';
+            VSync_s        <= '0';
+            VBlank_s       <= '0';
+            v_VCount_s     <= (others => '0');
+            VSyncDone_s    <= '0';
         elsif rising_edge( i_Clk_p ) then
 
             if ( i_Restart_p = '1' ) then
