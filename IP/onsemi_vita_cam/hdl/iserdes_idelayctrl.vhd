@@ -44,7 +44,8 @@ entity iserdes_idelayctrl is
         NROF_DELAYCTRLS : integer;
         IDELAYCLK_MULT  : integer;
         IDELAYCLK_DIV   : integer;
-        GENIDELAYCLK    : boolean
+        GENIDELAYCLK    : boolean;
+        C_FAMILY : string := "zynquplus"
     );
     port (
         CLOCK           : in std_logic;
@@ -164,12 +165,26 @@ begin
     end generate;
 
     IDELAYCTRL_INST : for bnk_i in 0 to NROF_DELAYCTRLS-1 generate
-        u_idelayctrl : IDELAYCTRL
+        u_idelayctrl_uplus : if (C_FAMILY = "zynquplus") generate
+            u_idelayctrl : IDELAYCTRL
+            generic map (
+                SIM_DEVICE => "ULTRASCALE"
+            )
             port map (
                 rdy    => idelay_ctrl_rdy_i(bnk_i),
                 refclk => REF_CLK,
                 rst    => RESET_DELAYCTRL
             );
+        end generate;
+
+        u_idelayctrl_other : if not (C_FAMILY = "zynquplus") generate
+            u_idelayctrl : IDELAYCTRL
+                port map (
+                    rdy    => idelay_ctrl_rdy_i(bnk_i),
+                    refclk => REF_CLK,
+                    rst    => RESET_DELAYCTRL
+                );
+        end generate;
     end generate IDELAYCTRL_INST;
 
     idelay_ctrl_rdy <= '1' when (idelay_ctrl_rdy_i = ONES) else '0';

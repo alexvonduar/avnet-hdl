@@ -184,8 +184,9 @@ architecture structure of iserdes_interface is
             NROF_DELAYCTRLS : integer;
             IDELAYCLK_MULT  : integer;
             IDELAYCLK_DIV   : integer;
-            GENIDELAYCLK    : boolean
-            );
+            GENIDELAYCLK    : boolean;
+            C_FAMILY        : string
+        );
         port (
             CLOCK  : in std_logic;
             RESET  : in std_logic;
@@ -447,7 +448,8 @@ begin
                 NROF_DELAYCTRLS => NROF_DELAYCTRLS,
                 IDELAYCLK_MULT  => IDELAYCLK_MULT,
                 IDELAYCLK_DIV   => IDELAYCLK_DIV,
-                GENIDELAYCLK    => GENIDELAYCLK
+                GENIDELAYCLK    => GENIDELAYCLK,
+                C_FAMILY        => C_FAMILY
             )
             port map(
                 CLOCK  => CLOCK,
