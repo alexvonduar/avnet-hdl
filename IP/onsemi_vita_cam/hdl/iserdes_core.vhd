@@ -99,7 +99,8 @@ entity iserdes_core is
         USE_BLOCKRAMFIFO : boolean := TRUE;
         INVERT_OUTPUT    : boolean := FALSE;
         INVERSE_BITORDER : boolean := FALSE;
-        C_FAMILY         : string  := "virtex6"
+        C_FAMILY         : string  := "virtex6";
+        FIFOWIDTH        : integer := 32
     );
     port(
         CLOCK : in std_logic; --system clock, sync to local clock
@@ -209,8 +210,8 @@ architecture rtl of iserdes_core is
 
     signal ISERDES_DATA : std_logic_vector(DATAWIDTH-1 downto 0);
 
-    signal DI : std_logic_vector(15 downto 0);
-    signal DO : std_logic_vector(15 downto 0);
+    signal DI : std_logic_vector(FIFOWIDTH-1 downto 0);
+    signal DO : std_logic_vector(FIFOWIDTH-1 downto 0);
 
     signal CLKb_inv : std_logic;
     signal CLKDIVb_inv : std_logic;
@@ -362,7 +363,6 @@ begin
             );
 
     end generate IDELAY_K7_GEN;
-
     -- iserdes
 
     -- datawidth
@@ -780,42 +780,118 @@ begin
     -- fifo
     fifogen: if (USE_FIFO = TRUE) generate
         blockramgen: if(USE_BLOCKRAMFIFO = TRUE) generate
+            fifo_ultra: if (C_FAMILY = "zynquplus") generate
+                FIFO18_inst : FIFO18E2
+                    generic map (
+                        CASCADE_ORDER => "NONE", -- FIRST, LAST, MIDDLE, NONE, PARALLEL
+                        CLOCK_DOMAINS => "INDEPENDENT", -- COMMON, INDEPENDENT
+                        FIRST_WORD_FALL_THROUGH => "FALSE", -- -- Sets the FIFO FWFT to FALSE or TRUE
+                        INIT => X"000000000", -- Initial values on output port
+                        PROG_EMPTY_THRESH => 128, -- Programmable Empty Threshold
+                        PROG_FULL_THRESH => 128, -- Programmable Full Threshold
+                        -- Programmable Inversion Attributes: Specifies the use of the built-in programmable inversion
+                        IS_RDCLK_INVERTED => '0', -- Optional inversion for RDCLK
+                        IS_RDEN_INVERTED => '0', -- Optional inversion for RDEN
+                        IS_RSTREG_INVERTED => '0', -- Optional inversion for RSTREG
+                        IS_RST_INVERTED => '0', -- Optional inversion for RST
+                        IS_WRCLK_INVERTED => '0', -- Optional inversion for WRCLK
+                        IS_WREN_INVERTED => '0', -- Optional inversion for WREN
+                        RDCOUNT_TYPE => "RAW_PNTR", -- EXTENDED_DATACOUNT, RAW_PNTR, SIMPLE_DATACOUNT, SYNC_PNTR
+                        READ_WIDTH => 18,                        -- 18-9
+                        REGISTER_MODE => "REGISTERED", -- DO_PIPELINED, REGISTERED, UNREGISTERED
+                        RSTREG_PRIORITY => "RSTREG",                        -- REGCE, RSTREG
+                        SLEEP_ASYNC => "FALSE",                        -- FALSE, TRUE
+                        SRVAL => X"000000000", -- SET/reset value of the FIFO outputs
+                        WRCOUNT_TYPE => "RAW_PNTR", -- EXTENDED_DATACOUNT, RAW_PNTR, SIMPLE_DATACOUNT, SYNC_PNTR
+                        WRITE_WIDTH => 18                        -- 18-9
+                        --ALMOST_FULL_OFFSET  => X"080",    -- Sets almost full threshold
+                        --ALMOST_EMPTY_OFFSET => X"080",    -- Sets the almost empty threshold
+                        --DATA_WIDTH          => 18,        -- Sets data width to 4, 9, or 18
+                        --DO_REG              => 1,         -- Enable output register ( 0 or 1), Must be 1 if the EN_SYN = FALSE
+                        --EN_SYN              => FALSE,     -- Specified FIFO as Asynchronous (FALSE) or
+                                                        -- Synchronous (TRUE)
+                        --FIRST_WORD_FALL_THROUGH => FALSE, -- Sets the FIFO FWFT to TRUE or FALSE
+                        --SIM_MODE            => "SAFE"
+                    )
+                    -- Simulation: "SAFE" vs "FAST", see "Synthesis and Simulation
+                    -- Design Guide" for details
+                    port map (
+                        CASDOUT     => open,
+                        CASDOUTP    => open,
+                        CASNXTEMPTY => open,
+                        CASPRVRDEN  => open,
+                        -- Cascade Signals inputs: Multi-FIFO cascade signals
+                        CASDIN        => zeros(31 downto 0), -- 32-bit input: Data cascade input bus
+                        CASDINP       => zeros(3 downto 0), -- 4-bit input: Parity data cascade input bus
+                        CASDOMUX      => zero, -- 1-bit input: Cascade MUX select
+                        CASDOMUXEN    => zero, -- 1-bit input: Enable for cascade MUX select
+                        CASNXTRDEN    => zero, -- 1-bit input: Cascade next read enable
+                        CASOREGIMUX   => zero, -- 1-bit input: Cascade output MUX select
+                        CASOREGIMUXEN => zero, -- 1-bit input: Cascade output MUX select enable
+                        CASPRVEMPTY   => zero, -- 1-bit input: Cascade previous empty
+                        --
+                        PROGEMPTY   => open, -- 1-bit almost empty output flag
+                        PROGFULL    => open, -- 1-bit almost full output flag
+                        DOUT        => DO, -- 32-bit data output
+                        DOUTP       => open, -- 4-bit parity data output
+                        EMPTY       => FIFO_EMPTY, -- 1-bit empty output flag
+                        FULL        => FIFO_FULL, -- 1-bit full output flag
+                        RDCOUNT     => open, -- 12-bit read count output
+                        RDERR       => open, -- 1-bit read error output
+                        RDRSTBUSY   => open, -- 1-bit output: Reset busy (sync to RDCLK)
+                        REGCE       => one,  -- 1-bit
+                        RSTREG      => zero, -- 1-bit
+                        WRCOUNT     => open, -- 12-bit write count output
+                        WRERR       => open, -- 1-bit write error
+                        WRRSTBUSY   => open, -- 1-bit output: Reset busy (sync to WRCLK)
+                        DIN         => DI, -- 32-bit data input
+                        DINP        => zeros(3 downto 0), -- 2-bit parity input
+                        RDCLK       => CLOCK, -- 1-bit read clock input
+                        RDEN        => FIFO_RDEN, -- 1-bit read enable input
+                        RST         => FIFO_RESET, -- 1-bit reset input
+                        WRCLK       => CLKDIV, -- 1-bit write clock input
+                        WREN        => FIFO_WREN,              -- 1-bit write enable input
+                        SLEEP       => zero
+                    );
+            end generate;
 
-            FIFO18_inst : FIFO18
-                generic map (
-                    ALMOST_FULL_OFFSET  => X"080",    -- Sets almost full threshold
-                    ALMOST_EMPTY_OFFSET => X"080",    -- Sets the almost empty threshold
-                    DATA_WIDTH          => 18,        -- Sets data width to 4, 9, or 18
-                    DO_REG              => 1,         -- Enable output register ( 0 or 1), Must be 1 if the EN_SYN = FALSE
-                    EN_SYN              => FALSE,     -- Specified FIFO as Asynchronous (FALSE) or
-                                                      -- Synchronous (TRUE)
-                    FIRST_WORD_FALL_THROUGH => FALSE, -- Sets the FIFO FWFT to TRUE or FALSE
-                    SIM_MODE            => "SAFE"
-                )
-                -- Simulation: "SAFE" vs "FAST", see "Synthesis and Simulation
-                -- Design Guide" for details
-                port map (
-                    ALMOSTEMPTY => open, -- 1-bit almost empty output flag
-                    ALMOSTFULL  => open, -- 1-bit almost full output flag
-                    DO          => DO, -- 16-bit data output
-                    DOP         => open, -- 2-bit parity data output
-                    EMPTY       => FIFO_EMPTY, -- 1-bit empty output flag
-                    FULL        => FIFO_FULL, -- 1-bit full output flag
-                    RDCOUNT     => open, -- 12-bit read count output
-                    RDERR       => open, -- 1-bit read error output
-                    WRCOUNT     => open, -- 12-bit write count output
-                    WRERR       => open, -- 1-bit write error
-                    DI          => DI, -- 16-bit data input
-                    DIP         => zeros(1 downto 0), -- 2-bit parity input
-                    RDCLK       => CLOCK, -- 1-bit read clock input
-                    RDEN        => FIFO_RDEN, -- 1-bit read enable input
-                    RST         => FIFO_RESET, -- 1-bit reset input
-                    WRCLK       => CLKDIV, -- 1-bit write clock input
-                    WREN        => FIFO_WREN              -- 1-bit write enable input
-                );
+            fifo_not_uplus : if not (C_FAMILY = "zynquplus") generate
+                FIFO18_inst : FIFO18
+                    generic map (
+                        ALMOST_FULL_OFFSET  => X"080",    -- Sets almost full threshold
+                        ALMOST_EMPTY_OFFSET => X"080",    -- Sets the almost empty threshold
+                        DATA_WIDTH          => 18,        -- Sets data width to 4, 9, or 18
+                        DO_REG              => 1,         -- Enable output register ( 0 or 1), Must be 1 if the EN_SYN = FALSE
+                        EN_SYN              => FALSE,     -- Specified FIFO as Asynchronous (FALSE) or
+                                                        -- Synchronous (TRUE)
+                        FIRST_WORD_FALL_THROUGH => FALSE, -- Sets the FIFO FWFT to TRUE or FALSE
+                        SIM_MODE            => "SAFE"
+                    )
+                    -- Simulation: "SAFE" vs "FAST", see "Synthesis and Simulation
+                    -- Design Guide" for details
+                    port map (
+                        ALMOSTEMPTY => open, -- 1-bit almost empty output flag
+                        ALMOSTFULL  => open, -- 1-bit almost full output flag
+                        DO          => DO, -- 16-bit data output
+                        DOP         => open, -- 2-bit parity data output
+                        EMPTY       => FIFO_EMPTY, -- 1-bit empty output flag
+                        FULL        => FIFO_FULL, -- 1-bit full output flag
+                        RDCOUNT     => open, -- 12-bit read count output
+                        RDERR       => open, -- 1-bit read error output
+                        WRCOUNT     => open, -- 12-bit write count output
+                        WRERR       => open, -- 1-bit write error
+                        DI          => DI, -- 16-bit data input
+                        DIP         => zeros(1 downto 0), -- 2-bit parity input
+                        RDCLK       => CLOCK, -- 1-bit read clock input
+                        RDEN        => FIFO_RDEN, -- 1-bit read enable input
+                        RST         => FIFO_RESET, -- 1-bit reset input
+                        WRCLK       => CLKDIV, -- 1-bit write clock input
+                        WREN        => FIFO_WREN              -- 1-bit write enable input
+                    );
+            end generate;
             -- End of FIFO18_inst instantiation
 
-            DI(15 downto DATAWIDTH) <= (others => '0');
+            DI(FIFOWIDTH-1 downto DATAWIDTH) <= (others => '0');
             DI(DATAWIDTH-1 downto 0) <= ISERDES_DATA;
             FIFO_DATAOUT <= DO(DATAWIDTH-1 downto 0);
         end generate;
@@ -866,7 +942,7 @@ begin
                     );
             end generate;
 
-            DI(15 downto DATAWIDTH)  <= (others => '0');
+            DI(FIFOWIDTH-1 downto DATAWIDTH)  <= (others => '0');
             DI(DATAWIDTH-1 downto 0) <= ISERDES_DATA;
 
         end generate;
