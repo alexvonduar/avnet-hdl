@@ -75,7 +75,7 @@ entity onsemi_vita_cam_v3_1 is
         C_IO_VITA_DATA_WIDTH  : integer := 4;
         C_INCLUDE_BLC         : integer := 0;
         C_INCLUDE_MONITOR     : integer := 0;
-        C_FAMILY              : string  := "zynq";
+        C_FAMILY              : string  := "zynquplus";
         -- User parameters ends
         -- Do not modify the parameters beyond this line
 
