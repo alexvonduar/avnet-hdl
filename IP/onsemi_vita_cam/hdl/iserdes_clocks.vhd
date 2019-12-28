@@ -575,7 +575,7 @@ begin
 
         end generate; --gen_oserdes_multiplier_v5 : if (C_FAMILY = "virtex5" ) generate
 
-        gen_oserdes_multiplier_v6 : if (C_FAMILY = "virtex6" or C_FAMILY = "kintex7" or C_FAMILY = "zynq" or C_FAMILY = "artix7" or C_FAMILY = "virtex7") generate
+        gen_oserdes_multiplier_v6 : if (C_FAMILY = "virtex6" or C_FAMILY = "kintex7" or C_FAMILY = "zynq" or C_FAMILY = "zynquplus" or C_FAMILY = "artix7" or C_FAMILY = "virtex7") generate
 
             mmcm_adv_inst : MMCM_ADV
                 generic map (
@@ -648,7 +648,7 @@ begin
 
             multiplier_lock <= MULT_LOCKED;
 
-        end generate; --gen_oserdes_multiplier_v6 : if (C_FAMILY = "virtex6" or C_FAMILY = "kintex7" or C_FAMILY = "zynq" or C_FAMILY = "artix7" or C_FAMILY = "virtex7") generate
+        end generate; --gen_oserdes_multiplier_v6 : if (C_FAMILY = "virtex6" or C_FAMILY = "kintex7" or C_FAMILY = "zynq" or C_FAMILY = "zynquplus" or C_FAMILY = "artix7" or C_FAMILY = "virtex7") generate
 
         --  necessary BUFG instansiations
         mult_feedback_BUFG_inst : BUFG
@@ -848,7 +848,7 @@ begin
 
         end generate; --gen_iserdes_divider_v5 : if (C_FAMILY = "virtex5" ) generate
 
-        gen_iserdes_divider_v6 : if (C_FAMILY = "virtex6" or C_FAMILY = "kintex7" or C_FAMILY = "zynq" or C_FAMILY = "artix7" or C_FAMILY = "virtex7") generate
+        gen_iserdes_divider_v6 : if (C_FAMILY = "virtex6" or C_FAMILY = "kintex7" or C_FAMILY = "zynq" or C_FAMILY = "zynquplus" or C_FAMILY = "artix7" or C_FAMILY = "virtex7") generate
 
             mmcm_adv_inst : MMCM_ADV
                 generic map(
@@ -928,7 +928,7 @@ begin
                     I => DIV_PLLFBI -- Clock buffer input
                 );
 
-        end generate; --gen_iserdes_divider_v6 : if (C_FAMILY = "virtex6" or C_FAMILY = "kintex7" or C_FAMILY = "zynq" or C_FAMILY = "artix7" or C_FAMILY = "virtex7") generate
+        end generate; --gen_iserdes_divider_v6 : if (C_FAMILY = "virtex6" or C_FAMILY = "kintex7" or C_FAMILY = "zynq" or C_FAMILY = "zynquplus" or C_FAMILY = "artix7" or C_FAMILY = "virtex7") generate
 
         div_feedback_BUFG_inst : BUFG
             port map (
