@@ -1740,6 +1740,42 @@ begin
 
     end generate V6_GEN;
 
+    Ultra_GEN : if (C_FAMILY = "zynquplus") generate
+
+        ODDR_vita_clk_pll_o : ODDRE1
+            generic map (
+                IS_C_INVERTED  => '0', -- Optional inversion for C
+                IS_D1_INVERTED => '0', -- Unsupported, do not use
+                IS_D2_INVERTED => '0', -- Unsupported, do not use
+                SRVAL          => '1', -- Initializes the ODDRE1 Flip-Flops to the specified value ('0', '1')
+                SIM_DEVICE     => "ULTRASCALE" -- Set the device version (ULTRASCALE)
+            )
+            port map (
+                Q  => vita_clk_pll_o,
+                C  => clk,
+                D1 => net0,
+                D2 => net1,
+                SR => net0
+            );
+
+        ODDR_vita_clk_pll_t : ODDRE1
+            generic map (
+                IS_C_INVERTED  => '0', -- Optional inversion for C
+                IS_D1_INVERTED => '0', -- Unsupported, do not use
+                IS_D2_INVERTED => '0', -- Unsupported, do not use
+                SRVAL          => '1', -- Initializes the ODDRE1 Flip-Flops to the specified value ('0', '1')
+                SIM_DEVICE     => "ULTRASCALE" -- Set the device version (ULTRASCALE)
+            )
+            port map (
+                Q  => vita_clk_pll_t,
+                C  => clk,
+                D1 => oe_n,
+                D2 => oe_n,
+                SR => net0
+            );
+
+    end generate Ultra_GEN;
+
     --
     -- Tri-stateable outputs
     --    Can be used to disable outputs to FMC connector
