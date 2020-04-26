@@ -33,7 +33,7 @@
 #  Hardware Boards:     
 # 
 #  Tool versions:       
-set required_version 2019.1
+set required_version 2019.2
 # 
 #  Description:         Build Script for sample project (fails build)
 # 
@@ -55,7 +55,7 @@ set ok_to_tag_public "false"
 set sdk "no"
 set jtag "no"
 set dev_arch "zynq"
-set vivado_ver "2019_1"
+set vivado_ver "2019_2"
 
 # create GREP process
 # From: http://wiki.tcl.tk/9395
@@ -151,7 +151,7 @@ for {set i 0} {$i < [llength $argv]} {incr i} {
       puts "Parameters are:"
       puts "board=<board_name>\n boards are listed in the /Boards folder"
       puts "project=<project_name>\n project names are listed in the /Scripts/ProjectScripts folder"
-      puts "sdk=\n 'yes' will attempt to execute:\n ../software/<project_name>_sdk.tcl"
+      puts "sdk=\n 'yes' will attempt to execute:\n ../../../Software/<project_name>_sdk.tcl"
       puts " in order to build the SDK portion of the project (prior to tagging request)"
       puts "tag=\n 'yes' will tag locally\n this will attempt to tag based on that flag"
       puts " each project has a release level flag, in the project make script\n the project has been released for the tag level you are attempting to run at"
@@ -188,7 +188,7 @@ for {set i 0} {$i < [llength $argv]} {incr i} {
       for {set j 0} {$j < [expr $chart_wdith - [string length $clean]]} {incr j} {
          append printmessage " "
       }
-      puts "| Clean            |     $printmessage |"
+      append build_params  "| Clean            |     $printmessage |\n"
    }
    # check for PROJECT parameter
    if {[string match -nocase "project=*" [lindex $argv $i]]} {
@@ -253,6 +253,15 @@ for {set i 0} {$i < [llength $argv]} {incr i} {
       }
       append build_params "| Device           |     $printmessage |\n"
    }
+   # check for VIVADO_VER parameter
+   if {[string match -nocase "vivado_ver=*" [lindex $argv $i]]} {
+      set vivado_ver [string range [lindex $argv $i] 11 end]
+      set printmessage $vivado_ver
+      for {set j 0} {$j < [expr $chart_wdith - [string length $vivado_ver]]} {incr j} {
+         append printmessage " "
+      }
+      append build_params "| Vivado Version   |     $printmessage |\n"
+   }
    append build_params "+------------------+------------------------------------+\n"
 }
 append build_params "\n\n"
@@ -289,7 +298,7 @@ if {[file isfile ./ProjectScripts/$project.tcl]} {
    puts "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n\n"
 } else {
    puts "Project Script Does NOT Exist, Check Name and Try Again!"
-   return -code ok
+   #return -code ok
 }
 
 # create variables with absolute folders for all necessary folders
@@ -298,6 +307,12 @@ set ip_folder [file normalize [pwd]/../IP]
 set projects_folder [file normalize [pwd]/../Projects/${project}/${board}_${vivado_ver}]
 set scripts_folder [file normalize [pwd]]
 set repo_folder [file normalize [pwd]../../]
+
+if {[string match -nocase "yes" $clean]} {
+   puts "Cleaning Project..."
+   file delete -force ${projects_folder}
+   return -code ok
+}
 
 # IF tagging - check for modified files
 set GUI $rdi::mode
@@ -394,17 +409,18 @@ if {[string match -nocase "no" $jtag]} {
    
    # attempt to build SDK portion
    if {[string match -nocase "yes" $sdk]} {
+      pwd
       puts "Attempting to Build SDK..."
       cd ${projects_folder}
       # Change starting with 2018.2 (Ultra96v2 validation test, Nov 2018) to use xsct instead of xsdk
       # https://www.xilinx.com/html_docs/xilinx2018_2/SDK_Doc/xsct/use_cases/xsct_howtoruntclscriptfiles.html
       # added the Board variable so it could be used when needed - see uz_petalinux SDK build script for 
       # how to use this
-      exec >@stdout 2>@stderr xsct ../software/$project\_sdk.tcl -notrace $board
+      exec >@stdout 2>@stderr xsct ../../../Software/$project/$project\_sdk.tcl -notrace $board $vivado_ver
       # Build a BOOT.bin file only if a BIF file exists for the project.
-      if {[file exists ../software/$project\_sd.bif]} {
+      if {[file exists ../../../Software/$project/$project\_sd.bif]} {
          puts "Generating BOOT.BIN..."
-         exec >@stdout 2>@stderr bootgen -arch $dev_arch -image ../software/$project\_sd.bif -w -o BOOT.bin
+         exec >@stdout 2>@stderr bootgen -arch $dev_arch -image ../../../Software/$project/$project\_sd.bif -w -o BOOT.bin
       }
       cd ${scripts_folder}
    }

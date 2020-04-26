@@ -1,11 +1,15 @@
 # ----------------------------------------------------------------------------
-#       _____
-#      *     *
-#     *____   *____
-#    * *===*   *==*
-#   *___*===*___**  AVNET
-#        *======*
-#         *====*
+#
+#        ** **        **          **  ****      **  **********  ********** ®
+#       **   **        **        **   ** **     **  **              **
+#      **     **        **      **    **  **    **  **              **
+#     **       **        **    **     **   **   **  *********       **
+#    **         **        **  **      **    **  **  **              **
+#   **           **        ****       **     ** **  **              **
+#  **  .........  **        **        **      ****  **********      **
+#     ...........
+#                                     Reach Further™
+#
 # ----------------------------------------------------------------------------
 # 
 #  This design is the property of Avnet.  Publication of this
@@ -48,29 +52,39 @@
 #                       May 03, 2018: 1.4  Updated to support 2017.4 tools
 #                       Aug 11, 2018: 1.5  Updated to support 2018.2 tools
 #                       Sep 27, 2019: 1.6  Updated to support 2019.1 tools
+#                       Jan 15, 2020: 1.7  Updated to support 2019.2 tools
 # 
 # ----------------------------------------------------------------------------
 
-## Build PetaLinux BSP HW Platform
-## for PicoZed 7010 SOM
-set argv [list board=PZ7010_FMC2 project=pz_petalinux sdk=yes close_project=yes version_override=yes]
-set argc [llength $argv]
-source ./make.tcl -notrace
+if {$argc != 0} {
+	# Build PetaLinux BSP HW Platform
+	# for MicroZed Defined from external source
+	set argv [list board=[lindex $argv 0] project=[lindex $argv 1] sdk=no close_project=yes version_override=yes dev_arch=zynq]
+	set argc [llength $argv]
+	source ./make.tcl -notrace
+} else {
 
-## Build PetaLinux BSP HW Platform
-## for PicoZed 7015 SOM
-set argv [list board=PZ7015_FMC2 project=pz_petalinux sdk=yes close_project=yes version_override=yes]
-set argc [llength $argv]
-source ./make.tcl -notrace
-
-## Build PetaLinux BSP HW Platform
-## for PicoZed 7020 SOM
-set argv [list board=PZ7020_FMC2 project=pz_petalinux sdk=yes close_project=yes version_override=yes]
-set argc [llength $argv]
-source ./make.tcl -notrace
-
-## Build PetaLinux BSP HW Platform
-## for PicoZed 7030 SOM
-set argv [list board=PZ7030_FMC2 project=pz_petalinux sdk=yes close_project=yes version_override=yes]
-set argc [llength $argv]
-source ./make.tcl -notrace
+   ## Build PetaLinux BSP HW Platform
+   ## for PicoZed 7010 SOM
+   set argv [list board=PZ7010_FMC2 project=pz_petalinux sdk=no close_project=yes version_override=yes]
+   set argc [llength $argv]
+   source ./make.tcl -notrace
+   
+   ## Build PetaLinux BSP HW Platform
+   ## for PicoZed 7015 SOM
+   set argv [list board=PZ7015_FMC2 project=pz_petalinux sdk=no close_project=yes version_override=yes]
+   set argc [llength $argv]
+   source ./make.tcl -notrace
+   
+   ## Build PetaLinux BSP HW Platform
+   ## for PicoZed 7020 SOM
+   set argv [list board=PZ7020_FMC2 project=pz_petalinux sdk=no close_project=yes version_override=yes]
+   set argc [llength $argv]
+   source ./make.tcl -notrace
+   
+   ## Build PetaLinux BSP HW Platform
+   ## for PicoZed 7030 SOM
+   set argv [list board=PZ7030_FMC2 project=pz_petalinux sdk=no close_project=yes version_override=yes]
+   set argc [llength $argv]
+   source ./make.tcl -notrace
+}
