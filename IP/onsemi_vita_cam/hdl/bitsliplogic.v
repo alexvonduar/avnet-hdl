@@ -1,3 +1,50 @@
+module muxer12b
+(
+    input  wire        reset,   // Reset line
+    input  wire        clk,     // Global clock
+    input  wire        bitslip, // Bitslip control line
+    input  wire [11:0] din,     // Input from LVDS receiver pin
+    output wire [11:0] dout     // Output data
+);
+
+reg [11:0] sel;
+reg [11:0] last;
+reg [11:0] _dout;
+
+assign dout = _dout;
+
+always @ (posedge clk)
+begin
+    if (reset == 1'b1) begin
+        sel   <= 12'b0000000001;
+        last  <= 12'b0;
+        _dout <= 12'b0;
+    end
+    else begin
+        case(sel)
+        12'b000000000001 : _dout <= last;
+        12'b000000000010 : _dout <= {last[10:0], din[11]};
+        12'b000000000100 : _dout <= {last[9:0],  din[11:10]};
+        12'b000000001000 : _dout <= {last[8:0],  din[11:9]};
+        12'b000000010000 : _dout <= {last[7:0],  din[11:8]};
+        12'b000000100000 : _dout <= {last[6:0],  din[11:7]};
+        12'b000001000000 : _dout <= {last[5:0],  din[11:6]};
+        12'b000010000000 : _dout <= {last[4:0],  din[11:5]};
+        12'b000100000000 : _dout <= {last[3:0],  din[11:4]};
+        12'b001000000000 : _dout <= {last[2:0],  din[11:3]};
+        12'b010000000000 : _dout <= {last[1:0],  din[11:2]};
+        12'b100000000000 : _dout <= {last[0],    din[11:1]};
+        default : _dout <= last;
+        endcase
+        if (bitslip == 1'b1)
+        begin
+            sel  <= {sel[10:0], sel[11]};
+        end
+        last <= din;
+    end
+end
+endmodule
+
 module muxer10b
 (
     input  wire       reset,   // Reset line
@@ -139,6 +186,7 @@ module bitsliplogic # (
 
 generate
 case(DATAWIDTH)
+12: muxer12b m12(.reset(reset), .clk(clk), .bitslip(bitslip), .din(din), .dout(dout));
 10: muxer10b m10(.reset(reset), .clk(clk), .bitslip(bitslip), .din(din), .dout(dout));
 8: muxer8b m8(.reset(reset), .clk(clk), .bitslip(bitslip), .din(din), .dout(dout));
 4: muxer4b m4(.reset(reset), .clk(clk), .bitslip(bitslip), .din(din), .dout(dout));
