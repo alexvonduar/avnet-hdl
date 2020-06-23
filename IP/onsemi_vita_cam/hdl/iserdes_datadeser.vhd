@@ -289,6 +289,57 @@ component iserdes_core
 
 end component;
 
+component iserdes_core_zynq
+    generic
+    (
+        DATAWIDTH    : integer := 10;    -- can be 4, 6, 8 or 10 for DDR, can be 2, 3, 4, 5, 6, 7, or 8 for SDR.
+        DATA_RATE    : string  := "DDR"; -- DDR/SDR
+        DIFF_TERM    : boolean := TRUE;
+        USE_FIFO     : boolean := FALSE;
+        USE_BLOCKRAMFIFO : boolean := TRUE;
+        INVERT_OUTPUT    : boolean := FALSE;
+        INVERSE_BITORDER : boolean := FALSE;
+        C_FAMILY        : string  := "virtex6"
+    );
+    port
+    (
+        CLOCK                   : in    std_logic; --system clock, sync to local clock
+        RESET                   : in    std_logic;
+
+        -- Data IO
+        -- clk src can be internal or external
+        CLK                     : in    std_logic; -- high speed serial clock, either internal/external source,
+        CLKb                    : in    std_logic; -- can come from DCM/PLL, IBUF, BUFIO
+
+        CLKDIV                  : in    std_logic; -- parallel clock, derived from CLK using DCM/PLL or BUFR
+                                                    -- can be same as clock/appclock in synchronous systems
+
+        -- differential data input -> from outside, necesarry buffer is present in this file
+        SDATAP                  : in    std_logic;
+        SDATAN                  : in    std_logic;
+
+        --Ctrl IO, all controls should run on CLKDIV/parallelclk
+        IODELAY_ISERDES_RESET   : in    std_logic;
+
+        -- iodelay control
+        IODELAY_INC             : in    std_logic;
+        IODELAY_CE              : in    std_logic;
+
+        -- iserdes_nodelay control
+        ISERDES_BITSLIP         : in    std_logic;
+        ISERDES_DATAOUT         : out   std_logic_vector(DATAWIDTH-1 downto 0); --iserdes data, sync to clkdiv. can be used when fifo is not used
+
+        -- fifo control
+        FIFO_RESET              : in    std_logic;
+        --write side, sync to clkdiv
+        FIFO_WREN               : in    std_logic;
+        --readside
+        FIFO_RDEN               : in    std_logic;
+        FIFO_EMPTY              : out   std_logic;
+        FIFO_DATAOUT            : out   std_logic_vector(DATAWIDTH-1 downto 0)
+    );
+end component;
+
 component iserdes_mux
   generic(
         DATAWIDTH       : integer;
@@ -532,53 +583,109 @@ begin
 end process;
 
 iserdesgen: for i in 0 to (NROF_CONN-1) generate
-    ic: iserdes_core
-      generic map(
-           DATAWIDTH                => DATAWIDTH    ,
-           DATA_RATE                => DATA_RATE    ,
-           DIFF_TERM                => DIFF_TERM    ,
-           USE_FIFO                 => USE_FIFO     ,
-           USE_BLOCKRAMFIFO         => USE_BLOCKRAMFIFO ,
-           INVERT_OUTPUT            => INVERT_OUTPUT    ,
-           INVERSE_BITORDER         => INVERSE_BITORDER,
-           C_FAMILY                 => C_FAMILY
-      )
-      port map(
-            CLOCK                    => CLOCK            ,
-            RESET                    => RESET            ,
+    IC_ZYNQ_GEN: if (C_FAMILY="zynq") generate
+        ic: iserdes_core_zynq
+        generic map
+        (
+            DATAWIDTH        => DATAWIDTH,
+            DATA_RATE        => DATA_RATE,
+            DIFF_TERM        => DIFF_TERM,
+            USE_FIFO         => USE_FIFO,
+            USE_BLOCKRAMFIFO => USE_BLOCKRAMFIFO,
+            INVERT_OUTPUT    => INVERT_OUTPUT,
+            INVERSE_BITORDER => INVERSE_BITORDER,
+            C_FAMILY         => C_FAMILY
+        )
+        port map
+        (
+            CLOCK => CLOCK,
+            RESET => RESET,
 
             -- Data IO
             -- clk src can be internal or external
-            CLK                      => CLK              ,
-            CLKb                     => CLKb             ,
+            CLK  => CLK,
+            CLKb => CLKb,
 
-            CLKDIV                   => CLKDIV           ,
+            CLKDIV => CLKDIV,
 
 
             -- differential data input -> from outside, necesarry buffer is present in this file
-            SDATAP                   => SDATAP(i)        ,
-            SDATAN                   => SDATAN(i)        ,
+            SDATAP => SDATAP(i),
+            SDATAN => SDATAN(i),
 
             --Ctrl IO, all controls should run on CLKDIV/parallelclk
-            IODELAY_ISERDES_RESET    => IODELAY_ISERDES_RESET(i) ,
+            IODELAY_ISERDES_RESET => IODELAY_ISERDES_RESET(i),
 
             -- iodelay control
-            IODELAY_INC              => IODELAY_INC(i)   ,
-            IODELAY_CE               => IODELAY_CE(i)    ,
+            IODELAY_INC => IODELAY_INC(i),
+            IODELAY_CE  => IODELAY_CE(i),
 
             -- iserdes_nodelay control
-            ISERDES_BITSLIP          => ISERDES_BITSLIP(i) ,
-            ISERDES_DATAOUT          => ISERDES_DATA(((i+1)*DATAWIDTH)-1 downto i*DATAWIDTH) ,
+            ISERDES_BITSLIP => ISERDES_BITSLIP(i),
+            ISERDES_DATAOUT => ISERDES_DATA(((i+1)*DATAWIDTH)-1 downto i*DATAWIDTH),
 
             -- fifo control
-            FIFO_RESET              => FIFO_RESET       ,
+            FIFO_RESET => FIFO_RESET,
             --write side, sync to clkdiv
-            FIFO_WREN               => FIFO_WREN_SYNC(i),
+            FIFO_WREN  => FIFO_WREN_SYNC(i),
             --readside
-            FIFO_RDEN               => FIFO_RDEN        ,
-            FIFO_EMPTY              => fifo_empty_i(i)  ,  --temporary
-            FIFO_DATAOUT            => FIFO_DATAOUT(((i+1)*DATAWIDTH)-1 downto i*DATAWIDTH)
-           );
+            FIFO_RDEN    => FIFO_RDEN,
+            FIFO_EMPTY   => fifo_empty_i(i),  --temporary
+            FIFO_DATAOUT => FIFO_DATAOUT(((i+1)*DATAWIDTH)-1 downto i*DATAWIDTH)
+        );
+    end generate IC_ZYNQ_GEN;
+
+    IC_GEN: if not (C_FAMILY="zynq") generate
+        ic: iserdes_core
+            generic map
+            (
+                DATAWIDTH                => DATAWIDTH    ,
+                DATA_RATE                => DATA_RATE    ,
+                DIFF_TERM                => DIFF_TERM    ,
+                USE_FIFO                 => USE_FIFO     ,
+                USE_BLOCKRAMFIFO         => USE_BLOCKRAMFIFO ,
+                INVERT_OUTPUT            => INVERT_OUTPUT    ,
+                INVERSE_BITORDER         => INVERSE_BITORDER,
+                C_FAMILY                 => C_FAMILY
+            )
+            port map
+            (
+                CLOCK                    => CLOCK            ,
+                RESET                    => RESET            ,
+
+                -- Data IO
+                -- clk src can be internal or external
+                CLK                      => CLK              ,
+                CLKb                     => CLKb             ,
+
+                CLKDIV                   => CLKDIV           ,
+
+
+                -- differential data input -> from outside, necesarry buffer is present in this file
+                SDATAP                   => SDATAP(i)        ,
+                SDATAN                   => SDATAN(i)        ,
+
+                --Ctrl IO, all controls should run on CLKDIV/parallelclk
+                IODELAY_ISERDES_RESET    => IODELAY_ISERDES_RESET(i) ,
+
+                -- iodelay control
+                IODELAY_INC              => IODELAY_INC(i)   ,
+                IODELAY_CE               => IODELAY_CE(i)    ,
+
+                -- iserdes_nodelay control
+                ISERDES_BITSLIP          => ISERDES_BITSLIP(i) ,
+                ISERDES_DATAOUT          => ISERDES_DATA(((i+1)*DATAWIDTH)-1 downto i*DATAWIDTH) ,
+
+                -- fifo control
+                FIFO_RESET              => FIFO_RESET       ,
+                --write side, sync to clkdiv
+                FIFO_WREN               => FIFO_WREN_SYNC(i),
+                --readside
+                FIFO_RDEN               => FIFO_RDEN        ,
+                FIFO_EMPTY              => fifo_empty_i(i)  ,  --temporary
+                FIFO_DATAOUT            => FIFO_DATAOUT(((i+1)*DATAWIDTH)-1 downto i*DATAWIDTH)
+            );
+    end generate IC_GEN;
 
 end generate;
 
