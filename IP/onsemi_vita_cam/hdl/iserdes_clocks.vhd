@@ -958,7 +958,7 @@ gen_hs_clk_out: if (USE_HS_EXT_CLK_OUT = TRUE) generate
     DataSampleClk : ODDR
     generic map(
         DDR_CLK_EDGE => "OPPOSITE_EDGE", -- "OPPOSITE_EDGE" or "SAME_EDGE"
-        INIT => '0', -- Initial value for Q port (’1’ or ’0’)
+        INIT => '0', -- Initial value for Q port ('1' or '0')
         SRTYPE => "SYNC") -- Reset Type ("ASYNC" or "SYNC")
     port map (
         Q =>    hsoddroutclk        , -- 1-bit DDR output
@@ -1000,7 +1000,7 @@ gen_ls_clk_out: if (USE_LS_EXT_CLK_OUT = TRUE) generate
     DataSampleClk : ODDR
     generic map(
         DDR_CLK_EDGE => "OPPOSITE_EDGE", -- "OPPOSITE_EDGE" or "SAME_EDGE"
-        INIT => '0', -- Initial value for Q port (’1’ or ’0’)
+        INIT => '0', -- Initial value for Q port ('1' or '0')
         SRTYPE => "SYNC") -- Reset Type ("ASYNC" or "SYNC")
     port map (
         Q =>    lsoddroutclk        , -- 1-bit DDR output
