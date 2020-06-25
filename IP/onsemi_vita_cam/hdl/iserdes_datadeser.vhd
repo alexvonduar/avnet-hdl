@@ -54,7 +54,8 @@ use unisim.vcomponents.all;
 -- ENTITY DEFINITION --
 -----------------------
 entity iserdes_datadeser is
-  generic (
+    generic
+    (
         NROF_CONN       : integer; --16 bits
         DATAWIDTH       : integer; -- can be 4, 6, 8 or 10 for DDR, can be 2, 3, 4, 5, 6, 7, or 8 for SDR.
         RETRY_MAX       : integer; --16 bits, global
@@ -67,8 +68,9 @@ entity iserdes_datadeser is
         INVERT_OUTPUT    : boolean := FALSE;
         INVERSE_BITORDER : boolean := FALSE;
         C_FAMILY        : string  := "virtex6"
-  );
-  port(
+    );
+    port
+    (
         CLOCK               : in    std_logic;
         RESET               : in    std_logic;
 
@@ -77,6 +79,7 @@ entity iserdes_datadeser is
         CLKb                : in    std_logic;
 
         CLKDIV              : in    std_logic;
+        CLKDIV8             : in    std_logic;
 
         --serdes data, directly connected to bondpads
         SDATAP              : in    std_logic_vector(NROF_CONN-1 downto 0);
@@ -119,7 +122,7 @@ entity iserdes_datadeser is
         FIFO_RDEN           : in    std_logic;
         FIFO_EMPTY          : out   std_logic;
         FIFO_DATAOUT        : out   std_logic_vector((NROF_CONN*DATAWIDTH)-1 downto 0)
-       );
+    );
 
 end iserdes_datadeser;
 
@@ -313,6 +316,7 @@ component iserdes_core_zynq
 
         CLKDIV                  : in    std_logic; -- parallel clock, derived from CLK using DCM/PLL or BUFR
                                                     -- can be same as clock/appclock in synchronous systems
+        CLKDIV8                 : in    std_logic;
 
         -- differential data input -> from outside, necesarry buffer is present in this file
         SDATAP                  : in    std_logic;
@@ -607,7 +611,7 @@ iserdesgen: for i in 0 to (NROF_CONN-1) generate
             CLKb => CLKb,
 
             CLKDIV => CLKDIV,
-
+            CLKDIV8 => CLKDIV8,
 
             -- differential data input -> from outside, necesarry buffer is present in this file
             SDATAP => SDATAP(i),

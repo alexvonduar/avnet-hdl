@@ -1479,6 +1479,11 @@
         <spirit:logicalName>work</spirit:logicalName>
       </spirit:file>
       <spirit:file>
+        <spirit:name>hdl/iserdes_clocks_zynq.vhd</spirit:name>
+        <spirit:fileType>vhdlSource</spirit:fileType>
+        <spirit:logicalName>work</spirit:logicalName>
+      </spirit:file>
+      <spirit:file>
         <spirit:name>hdl/remapper.vhd</spirit:name>
         <spirit:fileType>vhdlSource</spirit:fileType>
         <spirit:logicalName>work</spirit:logicalName>
@@ -1614,6 +1619,11 @@
       </spirit:file>
       <spirit:file>
         <spirit:name>hdl/iserdes_clocks.vhd</spirit:name>
+        <spirit:fileType>vhdlSource</spirit:fileType>
+        <spirit:logicalName>work</spirit:logicalName>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>hdl/iserdes_clocks_zynq.vhd</spirit:name>
         <spirit:fileType>vhdlSource</spirit:fileType>
         <spirit:logicalName>work</spirit:logicalName>
       </spirit:file>

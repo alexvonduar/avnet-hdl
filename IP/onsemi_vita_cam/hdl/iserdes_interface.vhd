@@ -218,6 +218,7 @@ component iserdes_datadeser
         CLKb                : in    std_logic;
 
         CLKDIV              : in    std_logic;
+        CLKDIV8             : in    std_logic;
 
         --serdes data, directly connected to bondpads
         SDATAP              : in    std_logic_vector(NROF_CONN-1 downto 0);
@@ -321,6 +322,44 @@ component iserdes_clocks
        );
 end component;
 
+component iserdes_clocks_zynq
+    generic (
+        SIMULATION   : integer := 0;
+        DATAWIDTH    : integer := 10;    -- can be 4, 6, 8 or 10 for DDR, can be 2, 3, 4, 5, 6, 7, or 8 for SDR.
+        DATA_RATE    : string  := "DDR"; -- DDR/SDR
+        CLKSPEED     : integer := 50;    -- APPCLK speed in MHz. Everything is generated from Appclk to be as sync as possible
+        --DATAWIDTH, DATARATE, and clockspeed are used to calculate high speed clk speed.
+        --SIM_DEVICE   : string  := "VIRTEX5"; --VIRTEX4/VIRTEX5, for BUFR
+        C_FAMILY     : string  := "zynq";
+        DIFF_TERM    : boolean := TRUE;
+        USE_INPLL    : boolean := TRUE
+    );
+    port
+    (
+        CLOCK              : in    std_logic;  --appclock
+        RESET              : in    std_logic;  --active high reset
+
+        CLK_RDY            : out    std_logic; --CLK status (locked)
+        CLK_STATUS         : out    std_logic_vector(15 downto 0); -- extended status
+                                                                   -- 8 LSBs: transmit clk (if any)
+                                                                   -- 8 MSBs: receive clk (if any)
+
+        --reset for synchronizer between clk_div and App_clk
+        CLK_DIV_RESET      : out std_logic;
+
+        -- to iserdes
+        CLK                : out   std_logic;
+        CLKb               : out   std_logic;
+        CLKDIV8            : out   std_logic;
+        CLKDIV             : out   std_logic;
+
+        -- from sensor (only used when USED_EXT_CLK = YES)
+
+        HS_IN_CLK          : in    std_logic;
+        HS_IN_CLKb         : in    std_logic
+    );
+end component;
+
 component iserdes_compare
   generic(
         NROF_CONN       : integer
@@ -355,6 +394,7 @@ constant nrof_conn_per_clock : integer :=  (NROF_CONN/NROF_CLOCKCOMP);
 signal CLK_c              : std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
 signal CLKb_c             : std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
 signal CLKDIV_c           : std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
+signal CLKDIV8_c          : std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
 
 signal CLK_RDY_i          : std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
 
@@ -365,6 +405,7 @@ signal DELAY_WREN_c       : std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
 signal CLK_d              : std_logic_vector(NROF_CONTR_CONN-1 downto 0);
 signal CLKb_d             : std_logic_vector(NROF_CONTR_CONN-1 downto 0);
 signal CLKDIV_d           : std_logic_vector(NROF_CONTR_CONN-1 downto 0);
+signal CLKDIV8_d          : std_logic_vector(NROF_CONTR_CONN-1 downto 0);
 
 signal FIFO_WREN_d        : std_logic_vector(NROF_CONTR_CONN-1 downto 0); 
 signal DELAY_WREN_d       : std_logic_vector(NROF_CONTR_CONN-1 downto 0); 
@@ -394,6 +435,7 @@ DELAY_WREN_d(i*nrof_controlblocks_per_clock+nrof_controlblocks_per_clock-1 downt
 CLK_d(i*nrof_controlblocks_per_clock+nrof_controlblocks_per_clock-1 downto i*nrof_controlblocks_per_clock) <= (others => CLK_c(i));
 CLKb_d(i*nrof_controlblocks_per_clock+nrof_controlblocks_per_clock-1 downto i*nrof_controlblocks_per_clock) <= (others => CLKb_c(i));
 CLKDIV_d(i*nrof_controlblocks_per_clock+nrof_controlblocks_per_clock-1 downto i*nrof_controlblocks_per_clock) <= (others => CLKDIV_c(i));
+CLKDIV8_d(i*nrof_controlblocks_per_clock+nrof_controlblocks_per_clock-1 downto i*nrof_controlblocks_per_clock) <= (others => CLKDIV8_c(i));
 end generate;
 
 process (ALIGN_BUSY_d)
@@ -459,83 +501,149 @@ serdesidelayrefclk: iserdes_idelayctrl
 end generate;
 
 serdesclockgen : for i in 0 to (NROF_CLOCKCOMP-1) generate
-co: iserdes_compare
-  generic map (
-        NROF_CONN           => NROF_CONN
-       )
-  port map (
-        CLOCK               => CLOCK              ,
-        CLKDIV              => CLKDIV_c(i)        ,
-        
-        RESET               => RESET              ,
-        FIFO_EN             => FIFO_EN            ,
-        
-        SAMPLEINFIRSTBIT    => SAMPLEINFIRSTBIT(i*nrof_conn_per_clock + nrof_conn_per_clock-1 downto i*nrof_conn_per_clock) ,
-        SAMPLEINLASTBIT     => SAMPLEINLASTBIT(i*nrof_conn_per_clock + nrof_conn_per_clock-1 downto i*nrof_conn_per_clock)  ,
-        SAMPLEINOTHERBIT    => SAMPLEINOTHERBIT(i*nrof_conn_per_clock + nrof_conn_per_clock-1 downto i*nrof_conn_per_clock) ,
-        
-        SKEW_ERROR          => open               ,
-        
-        FIFO_WREN           => FIFO_WREN_c(i)     ,
-        DELAY_WREN          => DELAY_WREN_c(i)
-       );
+    co: iserdes_compare
+        generic map (
+            NROF_CONN           => NROF_CONN
+        )
+        port map (
+            CLOCK               => CLOCK              ,
+            CLKDIV              => CLKDIV_c(i)        ,
 
-ic: iserdes_clocks
-  generic map(
-        SIMULATION              => SIMULATION           ,
-        DATAWIDTH               => DATAWIDTH            ,
-        DATA_RATE               => DATA_RATE            ,
-        CLKSPEED                => CLKSPEED             ,
-        --SIM_DEVICE              => SIM_DEVICE           ,
-        C_FAMILY                => C_FAMILY             ,
-        DIFF_TERM               => DIFF_TERM            ,
-        USE_OUTPLL              => USE_OUTPLL           ,
-        USE_INPLL               => USE_INPLL            ,
-        USE_HS_EXT_CLK_IN       => USE_HS_EXT_CLK_IN    ,
-        USE_LS_EXT_CLK_IN       => USE_LS_EXT_CLK_IN    ,
-        USE_DIFF_HS_CLK_IN      => USE_DIFF_HS_CLK_IN   ,
-        USE_DIFF_LS_CLK_IN      => USE_DIFF_LS_CLK_IN   ,
-        USE_HS_REGIONAL_CLK     => USE_HS_REGIONAL_CLK  ,
-        USE_LS_REGIONAL_CLK     => USE_LS_REGIONAL_CLK  ,
-        USE_HS_EXT_CLK_OUT      => USE_HS_EXT_CLK_OUT   ,
-        USE_LS_EXT_CLK_OUT      => USE_LS_EXT_CLK_OUT   ,
+            RESET               => RESET              ,
+            FIFO_EN             => FIFO_EN            ,
 
-        USE_DIFF_HS_CLK_OUT     => USE_DIFF_HS_CLK_OUT  ,
-        USE_DIFF_LS_CLK_OUT     => USE_DIFF_LS_CLK_OUT
-  )
-  port map(
-        CLOCK              => CLOCK         ,
-        RESET              => RESET         ,
+            SAMPLEINFIRSTBIT    => SAMPLEINFIRSTBIT(i*nrof_conn_per_clock + nrof_conn_per_clock-1 downto i*nrof_conn_per_clock) ,
+            SAMPLEINLASTBIT     => SAMPLEINLASTBIT(i*nrof_conn_per_clock + nrof_conn_per_clock-1 downto i*nrof_conn_per_clock)  ,
+            SAMPLEINOTHERBIT    => SAMPLEINOTHERBIT(i*nrof_conn_per_clock + nrof_conn_per_clock-1 downto i*nrof_conn_per_clock) ,
 
-        CLK_RDY            => CLK_RDY_i(i)  ,
-        CLK_STATUS         => CLK_STATUS((i*16)+15 downto (i*16)) ,
+            SKEW_ERROR          => open               ,
 
-        -- to iserdes
-        CLK                => CLK_c(i)      ,
-        CLKb               => CLKb_c(i)     ,
-        CLKDIV             => CLKDIV_c(i)   ,
+            FIFO_WREN           => FIFO_WREN_c(i)     ,
+            DELAY_WREN          => DELAY_WREN_c(i)
+        );
 
-        EN_LS_CLK_OUT      => EN_LS_CLK_OUT ,
-        EN_HS_CLK_OUT      => EN_HS_CLK_OUT ,
-        
-        
-        --reset for synchronizer between clk_div and App_clk
-        CLK_DIV_RESET      => CLK_DIV_RESET,
+    IC_ZYNQ_GEN: if (C_FAMILY="zynq") generate
+        ic: iserdes_clocks_zynq
+            generic map
+            (
+                SIMULATION => SIMULATION,
+                DATAWIDTH  => DATAWIDTH,
+                DATA_RATE  => DATA_RATE,
+                CLKSPEED   => CLKSPEED,
+                --SIM_DEVICE => SIM_DEVICE,
+                C_FAMILY   => C_FAMILY,
+                DIFF_TERM  => DIFF_TERM,
+                --USE_OUTPLL => USE_OUTPLL,
+                USE_INPLL  => USE_INPLL
+                --USE_HS_EXT_CLK_IN   => USE_HS_EXT_CLK_IN,
+                --USE_LS_EXT_CLK_IN   => USE_LS_EXT_CLK_IN,
+                --USE_DIFF_HS_CLK_IN  => USE_DIFF_HS_CLK_IN,
+                --USE_DIFF_LS_CLK_IN  => USE_DIFF_LS_CLK_IN,
+                --USE_HS_REGIONAL_CLK => USE_HS_REGIONAL_CLK
+                --USE_LS_REGIONAL_CLK => USE_LS_REGIONAL_CLK,
+                --USE_HS_EXT_CLK_OUT  => USE_HS_EXT_CLK_OUT,
+                --USE_LS_EXT_CLK_OUT  => USE_LS_EXT_CLK_OUT,
 
-        -- to sensor (external)
-        LS_OUT_CLK         => LS_OUT_CLK(i) ,
-        LS_OUT_CLKb        => LS_OUT_CLKb(i),
+                --USE_DIFF_HS_CLK_OUT => USE_DIFF_HS_CLK_OUT,
+                --USE_DIFF_LS_CLK_OUT => USE_DIFF_LS_CLK_OUT
+            )
+            port map
+            (
+                CLOCK => CLOCK,
+                RESET => RESET,
 
-        HS_OUT_CLK         => HS_OUT_CLK(i) ,
-        HS_OUT_CLKb        => HS_OUT_CLKb(i),
+                CLK_RDY    => CLK_RDY_i(i),
+                CLK_STATUS => CLK_STATUS((i*16)+15 downto (i*16)),
 
-        -- from sensor (only used when USED_EXT_CLK = YES)
-        LS_IN_CLK          => LS_IN_CLK(i)  ,
-        LS_IN_CLKb         => LS_IN_CLKb(i) ,
+                -- to iserdes
+                CLK     => CLK_c(i),
+                CLKb    => CLKb_c(i),
+                CLKDIV  => CLKDIV_c(i),
+                CLKDIV8 => CLKDIV8_c(i),
 
-        HS_IN_CLK          => HS_IN_CLK(i)  ,
-        HS_IN_CLKb         => HS_IN_CLKb(i)
-       );
+                --EN_LS_CLK_OUT => EN_LS_CLK_OUT,
+                --EN_HS_CLK_OUT => EN_HS_CLK_OUT,
+
+
+                --reset for synchronizer between clk_div and App_clk
+                CLK_DIV_RESET => CLK_DIV_RESET,
+
+                -- to sensor (external)
+                --LS_OUT_CLK  => LS_OUT_CLK(i),
+                --LS_OUT_CLKb => LS_OUT_CLKb(i),
+
+                --HS_OUT_CLK  => HS_OUT_CLK(i),
+                --HS_OUT_CLKb => HS_OUT_CLKb(i),
+
+                -- from sensor (only used when USED_EXT_CLK = YES)
+                --LS_IN_CLK  => LS_IN_CLK(i),
+                --LS_IN_CLKb => LS_IN_CLKb(i) ,
+
+                HS_IN_CLK  => HS_IN_CLK(i),
+                HS_IN_CLKb => HS_IN_CLKb(i)
+            );
+    end generate IC_ZYNQ_GEN;
+
+    IC_GEN: if not (C_FAMILY="zynq") generate
+        ic: iserdes_clocks
+            generic map
+            (
+                SIMULATION => SIMULATION,
+                DATAWIDTH  => DATAWIDTH,
+                DATA_RATE  => DATA_RATE,
+                CLKSPEED   => CLKSPEED,
+                --SIM_DEVICE => SIM_DEVICE,
+                C_FAMILY   => C_FAMILY,
+                DIFF_TERM  => DIFF_TERM,
+                USE_OUTPLL => USE_OUTPLL,
+                USE_INPLL  => USE_INPLL,
+                USE_HS_EXT_CLK_IN   => USE_HS_EXT_CLK_IN,
+                USE_LS_EXT_CLK_IN   => USE_LS_EXT_CLK_IN,
+                USE_DIFF_HS_CLK_IN  => USE_DIFF_HS_CLK_IN,
+                USE_DIFF_LS_CLK_IN  => USE_DIFF_LS_CLK_IN,
+                USE_HS_REGIONAL_CLK => USE_HS_REGIONAL_CLK,
+                USE_LS_REGIONAL_CLK => USE_LS_REGIONAL_CLK,
+                USE_HS_EXT_CLK_OUT  => USE_HS_EXT_CLK_OUT,
+                USE_LS_EXT_CLK_OUT  => USE_LS_EXT_CLK_OUT,
+
+                USE_DIFF_HS_CLK_OUT => USE_DIFF_HS_CLK_OUT,
+                USE_DIFF_LS_CLK_OUT => USE_DIFF_LS_CLK_OUT
+            )
+            port map
+            (
+                CLOCK => CLOCK,
+                RESET => RESET,
+
+                CLK_RDY    => CLK_RDY_i(i),
+                CLK_STATUS => CLK_STATUS((i*16)+15 downto (i*16)),
+
+                -- to iserdes
+                CLK    => CLK_c(i),
+                CLKb   => CLKb_c(i),
+                CLKDIV => CLKDIV_c(i),
+
+                EN_LS_CLK_OUT => EN_LS_CLK_OUT,
+                EN_HS_CLK_OUT => EN_HS_CLK_OUT,
+
+
+                --reset for synchronizer between clk_div and App_clk
+                CLK_DIV_RESET => CLK_DIV_RESET,
+
+                -- to sensor (external)
+                LS_OUT_CLK  => LS_OUT_CLK(i),
+                LS_OUT_CLKb => LS_OUT_CLKb(i),
+
+                HS_OUT_CLK  => HS_OUT_CLK(i),
+                HS_OUT_CLKb => HS_OUT_CLKb(i),
+
+                -- from sensor (only used when USED_EXT_CLK = YES)
+                LS_IN_CLK  => LS_IN_CLK(i),
+                LS_IN_CLKb => LS_IN_CLKb(i) ,
+
+                HS_IN_CLK  => HS_IN_CLK(i),
+                HS_IN_CLKb => HS_IN_CLKb(i)
+            );
+    end generate IC_GEN;
 
 end generate;
 
@@ -560,14 +668,15 @@ generate_datagen: if (USE_DATAPATH = TRUE) generate
             C_FAMILY         => C_FAMILY
       )
       port map(
-            CLOCK               => CLOCK        ,
-            RESET               => RESET        ,
+            CLOCK               => CLOCK,
+            RESET               => RESET,
 
             --serdes clocks, from clocking module(s)
-            CLK                 => CLK_d(j)     ,
-            CLKb                => CLKb_d(j)    ,
+            CLK                 => CLK_d(j),
+            CLKb                => CLKb_d(j),
 
-            CLKDIV              => CLKDIV_d(j)  ,
+            CLKDIV              => CLKDIV_d(j),
+            CLKDIV8             => CLKDIV8_d(j),
 
             --serdes data, directly connected to bondpads
             SDATAP              => SDATAP(((j+1)*nrof_conn_per_controlblock)-1 downto j*nrof_conn_per_controlblock) ,
