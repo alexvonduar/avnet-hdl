@@ -79,7 +79,7 @@ entity iserdes_datadeser is
         CLKb                : in    std_logic;
 
         CLKDIV              : in    std_logic;
-        CLKDIV8             : in    std_logic;
+        CLKDIV4             : in    std_logic;
 
         --serdes data, directly connected to bondpads
         SDATAP              : in    std_logic_vector(NROF_CONN-1 downto 0);
@@ -316,7 +316,7 @@ component iserdes_core_zynq
 
         CLKDIV                  : in    std_logic; -- parallel clock, derived from CLK using DCM/PLL or BUFR
                                                     -- can be same as clock/appclock in synchronous systems
-        CLKDIV8                 : in    std_logic;
+        CLKDIV4                 : in    std_logic;
 
         -- differential data input -> from outside, necesarry buffer is present in this file
         SDATAP                  : in    std_logic;
@@ -611,7 +611,7 @@ iserdesgen: for i in 0 to (NROF_CONN-1) generate
             CLKb => CLKb,
 
             CLKDIV => CLKDIV,
-            CLKDIV8 => CLKDIV8,
+            CLKDIV4 => CLKDIV4,
 
             -- differential data input -> from outside, necesarry buffer is present in this file
             SDATAP => SDATAP(i),

@@ -154,7 +154,10 @@ entity iserdes_interface is
         WINDOW_WIDTH        : out   std_logic_vector((10*NROF_CONN)-1 downto 0);
         WORD_ALIGN          : out   std_logic_vector(NROF_CONN-1 downto 0);
         TIMEOUTONACK        : out   std_logic_vector(NROF_CONTR_CONN-1 downto 0);
-        
+        --DBG_CLK             : out   std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
+        DBG_CLKDIV          : out   std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
+        DBG_CLKDIV4         : out   std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
+
         -- control
         ALIGN_START         : in    std_logic;
         ALIGN_BUSY          : out   std_logic;
@@ -218,7 +221,7 @@ component iserdes_datadeser
         CLKb                : in    std_logic;
 
         CLKDIV              : in    std_logic;
-        CLKDIV8             : in    std_logic;
+        CLKDIV4             : in    std_logic;
 
         --serdes data, directly connected to bondpads
         SDATAP              : in    std_logic_vector(NROF_CONN-1 downto 0);
@@ -233,7 +236,7 @@ component iserdes_datadeser
         NROF_RETRIES        : out   std_logic_vector((16*NROF_CONN)-1 downto 0);
         TAP_SETTING         : out   std_logic_vector((10*NROF_CONN)-1 downto 0);
         WINDOW_WIDTH        : out   std_logic_vector((10*NROF_CONN)-1 downto 0);
-        WORD_ALIGN          : out   std_logic_vector(NROF_CONN-1 downto 0); 
+        WORD_ALIGN          : out   std_logic_vector(NROF_CONN-1 downto 0);
         TIMEOUTONACK        : out   std_logic;
 
         CLK_DIV_RESET       : in std_logic;
@@ -350,7 +353,7 @@ component iserdes_clocks_zynq
         -- to iserdes
         CLK                : out   std_logic;
         CLKb               : out   std_logic;
-        CLKDIV8            : out   std_logic;
+        CLKDIV4            : out   std_logic;
         CLKDIV             : out   std_logic;
 
         -- from sensor (only used when USED_EXT_CLK = YES)
@@ -394,7 +397,7 @@ constant nrof_conn_per_clock : integer :=  (NROF_CONN/NROF_CLOCKCOMP);
 signal CLK_c              : std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
 signal CLKb_c             : std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
 signal CLKDIV_c           : std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
-signal CLKDIV8_c          : std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
+signal CLKDIV4_c          : std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
 
 signal CLK_RDY_i          : std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
 
@@ -405,7 +408,7 @@ signal DELAY_WREN_c       : std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
 signal CLK_d              : std_logic_vector(NROF_CONTR_CONN-1 downto 0);
 signal CLKb_d             : std_logic_vector(NROF_CONTR_CONN-1 downto 0);
 signal CLKDIV_d           : std_logic_vector(NROF_CONTR_CONN-1 downto 0);
-signal CLKDIV8_d          : std_logic_vector(NROF_CONTR_CONN-1 downto 0);
+signal CLKDIV4_d          : std_logic_vector(NROF_CONTR_CONN-1 downto 0);
 
 signal FIFO_WREN_d        : std_logic_vector(NROF_CONTR_CONN-1 downto 0); 
 signal DELAY_WREN_d       : std_logic_vector(NROF_CONTR_CONN-1 downto 0); 
@@ -433,9 +436,12 @@ generate_data_clock_assignment: for i in 0 to (NROF_CLOCKCOMP-1) generate
 FIFO_WREN_d(i*nrof_controlblocks_per_clock+nrof_controlblocks_per_clock-1 downto i*nrof_controlblocks_per_clock) <= (others => FIFO_WREN_c(i));  
 DELAY_WREN_d(i*nrof_controlblocks_per_clock+nrof_controlblocks_per_clock-1 downto i*nrof_controlblocks_per_clock) <= (others => DELAY_WREN_c(i)); 
 CLK_d(i*nrof_controlblocks_per_clock+nrof_controlblocks_per_clock-1 downto i*nrof_controlblocks_per_clock) <= (others => CLK_c(i));
+--DBG_CLK(i) <= CLK_c(i);
 CLKb_d(i*nrof_controlblocks_per_clock+nrof_controlblocks_per_clock-1 downto i*nrof_controlblocks_per_clock) <= (others => CLKb_c(i));
 CLKDIV_d(i*nrof_controlblocks_per_clock+nrof_controlblocks_per_clock-1 downto i*nrof_controlblocks_per_clock) <= (others => CLKDIV_c(i));
-CLKDIV8_d(i*nrof_controlblocks_per_clock+nrof_controlblocks_per_clock-1 downto i*nrof_controlblocks_per_clock) <= (others => CLKDIV8_c(i));
+DBG_CLKDIV(i) <= CLKDIV_c(i);
+CLKDIV4_d(i*nrof_controlblocks_per_clock+nrof_controlblocks_per_clock-1 downto i*nrof_controlblocks_per_clock) <= (others => CLKDIV4_c(i));
+DBG_CLKDIV4(i) <= CLKDIV4_c(i);
 end generate;
 
 process (ALIGN_BUSY_d)
@@ -559,7 +565,7 @@ serdesclockgen : for i in 0 to (NROF_CLOCKCOMP-1) generate
                 CLK     => CLK_c(i),
                 CLKb    => CLKb_c(i),
                 CLKDIV  => CLKDIV_c(i),
-                CLKDIV8 => CLKDIV8_c(i),
+                CLKDIV4 => CLKDIV4_c(i),
 
                 --EN_LS_CLK_OUT => EN_LS_CLK_OUT,
                 --EN_HS_CLK_OUT => EN_HS_CLK_OUT,
@@ -667,7 +673,7 @@ generate_datagen: if (USE_DATAPATH = TRUE) generate
             INVERSE_BITORDER => INVERSE_BITORDER,
             C_FAMILY         => C_FAMILY
       )
-      port map(
+      port map (
             CLOCK               => CLOCK,
             RESET               => RESET,
 
@@ -676,7 +682,7 @@ generate_datagen: if (USE_DATAPATH = TRUE) generate
             CLKb                => CLKb_d(j),
 
             CLKDIV              => CLKDIV_d(j),
-            CLKDIV8             => CLKDIV8_d(j),
+            CLKDIV4             => CLKDIV4_d(j),
 
             --serdes data, directly connected to bondpads
             SDATAP              => SDATAP(((j+1)*nrof_conn_per_controlblock)-1 downto j*nrof_conn_per_controlblock) ,

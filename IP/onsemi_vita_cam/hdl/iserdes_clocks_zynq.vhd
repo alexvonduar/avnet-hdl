@@ -81,7 +81,7 @@ entity iserdes_clocks_zynq is
         -- to iserdes
         CLK                : out   std_logic;
         CLKb               : out   std_logic;
-        CLKDIV8            : out   std_logic;
+        CLKDIV4            : out   std_logic;
         CLKDIV             : out   std_logic;
 
         -- from sensor (only used when USED_EXT_CLK = YES)
@@ -179,33 +179,10 @@ begin
 
 end function;
 
-function calcinpllmultiplier (
-    CLKSPEED     : integer
-)
-return integer is
-variable output : integer := 1;
-begin
-    -- PLL frequency needs to be within 400MHz and 1000MHz
-
-    if (CLKSPEED > 500) then
-        output := 1;
-    elsif (CLKSPEED > 250) then
-        output := 2;
-    elsif (CLKSPEED > 125) then
-        output := 4;
-    else
-        output := 8;
-    end if;
-
-    return output;
-
-end function;
-
 --constants
 constant clockdivider  : integer := calcclockdivider(DATAWIDTH, DATA_RATE);
 constant clockdivider8 : integer := calcclockdivider(8, DATA_RATE);
---constant BUFR_dividable  : boolean := checkBUFRdividable(clockdivider);
-constant inpllmultiplier : integer := calcinpllmultiplier(CLKSPEED*clockdivider);
+constant clockdivider4 : integer := calcclockdivider(4, DATA_RATE);
 
 constant zero            : std_logic := '0';
 constant one             : std_logic := '1';
@@ -213,6 +190,7 @@ constant zeros           : std_logic_vector(31 downto 0) := X"00000000";
 constant ones            : std_logic_vector(31 downto 0) := X"FFFFFFFF";
 constant LockTimeDIV     : std_logic_vector(23 downto 0) := setlocktime(FALSE, USE_INPLL, SIMULATION, CLKSPEED);
 constant ResetTime        : std_logic_vector(23 downto 0) := X"000100";
+
 --signals
 type lockedmonitorstatetp is (
     Idle,
@@ -408,8 +386,8 @@ gen_divider_8: if (clockdivider = 8) generate
         );
 end generate gen_divider_8;
 
-gen_divider8_4: if (clockdivider8 = 4) generate
-    BUFR_regional_hs_clk_in : BUFR
+gen_divider4_4: if (clockdivider4 = 4) generate
+    BUFR_regional_clkdiv4 : BUFR
         generic map
         (
             BUFR_DIVIDE => "4", -- "BYPASS", "1", "2", "3", "4", "5", "6", "7", "8"
@@ -417,28 +395,29 @@ gen_divider8_4: if (clockdivider8 = 4) generate
         )
         port map
         (
-            O   => CLKDIV8, -- Clock buffer output
+            O   => CLKDIV4, -- Clock buffer output
             CE  => one,
             CLR => zero,
             I   => hsinclk -- Clock buffer input
         );
-end generate gen_divider8_4;
+end generate gen_divider4_4;
 
-gen_divider8_8: if (clockdivider8 = 8) generate
-    BUFR_regional_hs_clk_in : BUFR
+gen_divider4_2: if (clockdivider4 = 2) generate
+    BUFR_regional_clkdiv4 : BUFR
         generic map
         (
-            BUFR_DIVIDE => "8", -- "BYPASS", "1", "2", "3", "4", "5", "6", "7", "8"
+            BUFR_DIVIDE => "2", -- "BYPASS", "1", "2", "3", "4", "5", "6", "7", "8"
             SIM_DEVICE  => "7series"
         )
         port map
         (
-            O   => CLKDIV8, -- Clock buffer output
+            O   => CLKDIV4, -- Clock buffer output
             CE  => one,
             CLR => zero,
             I   => hsinclk -- Clock buffer input
         );
-end generate gen_divider8_8;
+end generate gen_divider4_2;
+
 
 locked_monitor_process : process (RESET, CLOCK)
 begin

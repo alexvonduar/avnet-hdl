@@ -115,7 +115,7 @@ port
     CLKDIV : in std_logic; -- parallel clock, derived from CLK using DCM/PLL or BUFR
                            -- can be same as clock/appclock in synchronous systems
 
-    CLKDIV8 : in std_logic;
+    CLKDIV4 : in std_logic;
 
     -- differential data input -> from outside, necesarry buffer is present in this file
     SDATAP : in std_logic;
@@ -212,6 +212,21 @@ port
 );
 end component;
 
+component convert8toX is
+    generic
+    (
+        DATAWIDTH : integer
+    );
+    port
+    (
+        reset : in  std_logic;
+        wclk  : in  std_logic;
+        rclk  : in  std_logic;
+        din   : in  std_logic_vector(3 downto 0);
+        dout  : out std_logic_vector(DATAWIDTH-1 downto 0)
+    );
+end component;
+
 signal SerialIn         : std_logic;
 signal SerialIoDelayOut : std_logic;
 
@@ -219,14 +234,8 @@ constant zero  : std_logic := '0';
 constant one   : std_logic := '1';
 constant zeros : std_logic_vector(31 downto 0) := X"00000000";
 
-signal SHIFT_FROM_SLAVE1 : std_logic;
-signal SHIFT_FROM_SLAVE2 : std_logic;
-
-signal SHIFT_TO_SLAVE1 : std_logic;
-signal SHIFT_TO_SLAVE2 : std_logic;
-
-signal MASTER_DATA : std_logic_vector(7 downto 0);
-signal SLAVE_DATA  : std_logic_vector(7 downto 0);
+signal DIV4_DATA : std_logic_vector(3 downto 0);
+signal DIV_DATA  : std_logic_vector(DATAWIDTH-1 downto 0);
 
 signal ISERDES_DATA        : std_logic_vector(DATAWIDTH-1 downto 0);
 signal ISERDES_DATA_SLIPED : std_logic_vector(DATAWIDTH-1 downto 0);
@@ -235,7 +244,6 @@ signal DI : std_logic_vector(15 downto 0);
 signal DO : std_logic_vector(15 downto 0);
 
 signal CLKb_inv    : std_logic;
-signal CLKDIVb_inv : std_logic;
 
 signal FIFO_FULL : std_logic;
 
@@ -294,7 +302,7 @@ IDELAYE2_inst : IDELAYE2
         LD          => IODELAY_ISERDES_RESET, -- 1-bit, In VAR_LOAD mode, it loads the value of CNTVALUEIN.
         LDPIPEEN    => '0',
         DATAOUT => SerialIoDelayOut, -- 1-bit delayed data output
-        C       => CLKDIV, -- 1-bit clock input
+        C       => CLKDIV4, -- 1-bit clock input
         CE      => IODELAY_CE, -- 1-bit clock enable input
         DATAIN  => zero, -- 1-bit internal data input
         IDATAIN => SerialIn, -- 1-bit input data input (connect to port)
@@ -303,11 +311,11 @@ IDELAYE2_inst : IDELAYE2
     );
 
 
-Master_iserdes : ISERDESE2
+iserdes : ISERDESE2
     generic map
     (
         DATA_RATE  => DATA_RATE,
-        DATA_WIDTH => DATAWIDTH,
+        DATA_WIDTH => 4,
         INIT_Q1 => '0',
         INIT_Q2 => '0',
         INIT_Q3 => '0',
@@ -332,22 +340,22 @@ Master_iserdes : ISERDESE2
         CE2      => one,
         CLK      => CLK,
         CLKB     => CLKb_inv,
-        CLKDIV   => CLKDIV,
+        CLKDIV   => CLKDIV4,
         DDLY     => SerialIoDelayOut, -- 1-bit input: Serial data from IDELAYE2
         OCLK     => zero,
         RST      => IODELAY_ISERDES_RESET,
         SHIFTIN1 => zero,
         SHIFTIN2 => zero,
-        Q1 => MASTER_DATA(0),
-        Q2 => MASTER_DATA(1),
-        Q3 => MASTER_DATA(2),
-        Q4 => MASTER_DATA(3),
-        Q5 => MASTER_DATA(4),
-        Q6 => MASTER_DATA(5),
-        Q7 => MASTER_DATA(6),
-        Q8 => MASTER_DATA(7),
-        SHIFTOUT1 => SHIFT_TO_SLAVE1,
-        SHIFTOUT2 => SHIFT_TO_SLAVE2,
+        Q1 => DIV4_DATA(0),
+        Q2 => DIV4_DATA(1),
+        Q3 => DIV4_DATA(2),
+        Q4 => DIV4_DATA(3),
+        Q5 => open, --DIV8_DATA(4),
+        Q6 => open, --DIV8_DATA(5),
+        Q7 => open, --DIV8_DATA(6),
+        Q8 => open, --DIV8_DATA(7),
+        SHIFTOUT1 => open,
+        SHIFTOUT2 => open,
         --
         D => '0',
         O => open,
@@ -359,129 +367,46 @@ Master_iserdes : ISERDESE2
         DYNCLKSEL    => '0'  -- 1-bit input: Dynamic CLK/CLKB inversion
     );
 
-Slave_iserdes_gen: if (DATAWIDTH >6) generate
-
-    Normal_Output: if (INVERT_OUTPUT=FALSE) generate
-        Normal_order: if (INVERSE_BITORDER=FALSE) generate
-            ISERDES_DATA(7 downto 0) <= MASTER_DATA(7 downto 0);
-            ISERDES_DATA(DATAWIDTH-1 downto 8) <= SLAVE_DATA(DATAWIDTH-7 downto 2);
-        end generate;
-
-        Inverse_order: if (INVERSE_BITORDER=TRUE) generate
-            gen_inverse_master: for i in 0 to 7 generate
-                ISERDES_DATA((DATAWIDTH-1)-i) <= MASTER_DATA(i);
-            end generate;
-            gen_inverse_slave: for i in 8 to DATAWIDTH-1 generate
-                ISERDES_DATA((DATAWIDTH-1)-i) <= SLAVE_DATA(i-6);
-            end generate;
-        end generate;
-    end generate;
-
-    Inverse_Output: if (INVERT_OUTPUT=TRUE) generate
-        Normal_order: if (INVERSE_BITORDER=FALSE) generate
-            ISERDES_DATA(7 downto 0) <= not MASTER_DATA(7 downto 0);
-            ISERDES_DATA(DATAWIDTH-1 downto 8) <= not SLAVE_DATA(DATAWIDTH-7 downto 2);
-        end generate;
-
-        Inverse_order: if (INVERSE_BITORDER=TRUE) generate
-            gen_inverse_master: for i in 0 to 7 generate
-                ISERDES_DATA((DATAWIDTH-1)-i) <= not MASTER_DATA(i);
-            end generate;
-            gen_inverse_slave: for i in 8 to DATAWIDTH-1 generate
-                ISERDES_DATA((DATAWIDTH-1)-i) <= not SLAVE_DATA(i-6);
-            end generate;
-        end generate;
-    end generate;
-
-
-    Slave_iserdes : ISERDESE2
+-- TODO: read ISERDES_DATA here
+CONVERT8TO10_GEN : if (DATAWIDTH = 10) generate
+    convert8to10 : convert8toX
         generic map
         (
-            DATA_RATE       => DATA_RATE    ,
-            DATA_WIDTH      => DATAWIDTH    ,
-            INIT_Q1         => '0'          ,
-            INIT_Q2         => '0'          ,
-            INIT_Q3         => '0'          ,
-            INIT_Q4         => '0'          ,
-            INTERFACE_TYPE  => "NETWORKING" ,
-            NUM_CE          => 2            ,
-            SERDES_MODE     => "SLAVE"     ,
-            --
-            DYN_CLKDIV_INV_EN => "FALSE", -- Enable DYNCLKDIVINVSEL inversion (FALSE, TRUE)
-            DYN_CLK_INV_EN    => "FALSE", -- Enable DYNCLKINVSEL inversion (FALSE, TRUE)
-            IOBDELAY        => "NONE",
-            OFB_USED        => "FALSE",
-            SRVAL_Q1        => '0',
-            SRVAL_Q2        => '0',
-            SRVAL_Q3        => '0',
-            SRVAL_Q4        => '0'
+            DATAWIDTH => DATAWIDTH
         )
-        port map
-        (
-            BITSLIP   => zero,
-            CE1       => one,
-            CE2       => one,
-            CLK       => CLK,
-            CLKB      => CLKb_inv,
-            CLKDIV    => CLKDIV,
-            DDLY      => zero, -- 1-bit input: Serial data from IDELAYE2
-            OCLK      => zero,
-            RST       => IODELAY_ISERDES_RESET,
-            SHIFTIN1  => SHIFT_TO_SLAVE1,
-            SHIFTIN2  => SHIFT_TO_SLAVE2,
-            Q1        => SLAVE_DATA(0),
-            Q2        => SLAVE_DATA(1),
-            Q3        => SLAVE_DATA(2),
-            Q4        => SLAVE_DATA(3),
-            Q5        => SLAVE_DATA(4),
-            Q6        => SLAVE_DATA(5),
-            Q7        => SLAVE_DATA(6),
-            Q8        => SLAVE_DATA(7),
-            SHIFTOUT1 => SHIFT_FROM_SLAVE1,
-            SHIFTOUT2 => SHIFT_FROM_SLAVE2,
-            --
-            D => '0',
-            O => open,
-            CLKDIVP => '0',
-            OFB => '0', -- 1-bit input: Data feedback from OSERDESE2
-            OCLKB => '0', -- 1-bit input: High speed negative edge output clock
-            -- Dynamic Clock Inversions: 1-bit (each) input: Dynamic clock inv pins to switch clk polarity
-            DYNCLKDIVSEL => '0', -- 1-bit input: Dynamic CLKDIV inversion
-            DYNCLKSEL => '0'  -- 1-bit input: Dynamic CLK/CLKB inversion
+        port map (
+            reset => IODELAY_ISERDES_RESET,
+            wclk  => CLKDIV4,
+            rclk  => CLKDIV,
+            din   => DIV4_DATA,
+            dout  => DIV_DATA
         );
+end generate CONVERT8TO10_GEN;
 
-end generate Slave_iserdes_gen;
 
-Noslave_iserdes_gen: if (DATAWIDTH <= 6) generate
-
-    Normal_Output: if (INVERT_OUTPUT=FALSE) generate
-        Normal_order: if (INVERSE_BITORDER=FALSE) generate
-            ISERDES_DATA(DATAWIDTH-1 downto 0) <= MASTER_DATA(DATAWIDTH-1 downto 0);
-        end generate;
-
-        Inverse_order: if (INVERSE_BITORDER=TRUE) generate
-            gen_inverse_master: for i in 0 to DATAWIDTH-1 generate
-                ISERDES_DATA((DATAWIDTH-1)-i) <= MASTER_DATA(i);
-            end generate;
-        end generate;
+Normal_Output: if (INVERT_OUTPUT=FALSE) generate
+    Normal_order: if (INVERSE_BITORDER=FALSE) generate
+        ISERDES_DATA(DATAWIDTH-1 downto 0) <= DIV_DATA(DATAWIDTH-1 downto 0);
     end generate;
 
-    Inverse_Output: if (INVERT_OUTPUT=TRUE) generate
-        Normal_order: if (INVERSE_BITORDER=FALSE) generate
-            ISERDES_DATA(DATAWIDTH-1 downto 0) <= not MASTER_DATA(DATAWIDTH-1 downto 0);
-        end generate;
-
-        Inverse_order: if (INVERSE_BITORDER=TRUE) generate
-            gen_inverse_master: for i in 0 to DATAWIDTH-1 generate
-                ISERDES_DATA((DATAWIDTH-1)-i) <= not MASTER_DATA(i);
-            end generate;
+    Inverse_order: if (INVERSE_BITORDER=TRUE) generate
+        gen_inverse_master: for i in 0 to DATAWIDTH-1 generate
+            ISERDES_DATA((DATAWIDTH-1)-i) <= DIV_DATA(i);
         end generate;
     end generate;
+end generate Normal_Output;
 
-    SHIFT_FROM_SLAVE1   <= '0';
-    SHIFT_FROM_SLAVE2   <= '0';
+Invert_Output_Gen: if (INVERT_OUTPUT=TRUE) generate
+    Normal_order: if (INVERSE_BITORDER=FALSE) generate
+        ISERDES_DATA(DATAWIDTH-1 downto 0) <= not DIV_DATA(DATAWIDTH-1 downto 0);
+    end generate;
 
-end generate;
+    Inverse_order: if (INVERSE_BITORDER=TRUE) generate
+        gen_inverse_master: for i in 0 to DATAWIDTH-1 generate
+            ISERDES_DATA((DATAWIDTH-1)-i) <= not DIV_DATA(i);
+        end generate;
+    end generate;
+end generate Invert_Output_Gen;
 
 
 BITSLIP_0 : bitsliplogic

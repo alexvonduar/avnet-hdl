@@ -223,7 +223,7 @@ entity onsemi_vita_cam_core is
     video_active_video_o           : out  std_logic;
     video_data_o                   : out  std_logic_vector((C_VIDEO_DATA_WIDTH-1) downto 0);
     -- Debug Ports
-    debug_iserdes_o                : out std_logic_vector(229 downto 0);
+    debug_iserdes_o                : out std_logic_vector(232 downto 0);
     debug_decoder_o                : out std_logic_vector(186 downto 0);
     debug_crc_o                    : out std_logic_vector( 87 downto 0);
     debug_triggen_o                : out std_logic_vector(  9 downto 0);
@@ -358,7 +358,10 @@ architecture rtl of onsemi_vita_cam_core is
     WINDOW_WIDTH        : out   std_logic_vector((10*NROF_CONN)-1 downto 0);
     WORD_ALIGN          : out   std_logic_vector(NROF_CONN-1 downto 0);
     TIMEOUTONACK        : out   std_logic_vector(NROF_CONTR_CONN-1 downto 0);
-        
+    --DBG_CLK             : out   std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
+    DBG_CLKDIV          : out   std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
+    DBG_CLKDIV4         : out   std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
+  
     -- control
     ALIGN_START         : in    std_logic;
     ALIGN_BUSY          : out   std_logic;
@@ -425,7 +428,10 @@ architecture rtl of onsemi_vita_cam_core is
   signal WINDOW_WIDTH        : std_logic_vector((10*NROF_CONN)-1 downto 0);
   signal WORD_ALIGN          : std_logic_vector(NROF_CONN-1 downto 0);
   signal TIMEOUTONACK        : std_logic_vector(NROF_CONTR_CONN-1 downto 0);
-        
+  --signal DBG_CLK             : std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
+  signal DBG_CLKDIV          : std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
+  signal DBG_CLKDIV4         : std_logic_vector(NROF_CLOCKCOMP-1 downto 0);
+
   -- control
 --signal ALIGN_START         : std_logic;
   signal ALIGN_BUSY          : std_logic;
@@ -1026,6 +1032,9 @@ begin
           TAP_SETTING         => TAP_SETTING          ,
           WINDOW_WIDTH        => WINDOW_WIDTH         ,
           WORD_ALIGN          => WORD_ALIGN           ,
+          --DBG_CLK             => DBG_CLK,
+          DBG_CLKDIV          => DBG_CLKDIV,
+          DBG_CLKDIV4         => DBG_CLKDIV4,
 
           -- control
           ALIGN_START         => host_iserdes_align_start,
@@ -1793,6 +1802,9 @@ end generate DIRECT_OUTPUT_GEN;
          debug_iserdes_o(179 downto 130) <= TAP_SETTING;
          debug_iserdes_o(229 downto 180) <= WINDOW_WIDTH;
          --debug_iserdes_o(309 downto 230) <= NROF_RETRIES;
+         debug_iserdes_o(230 downto 230) <= (others => '0');-- DBG_CLK;
+         debug_iserdes_o(232 downto 232) <= DBG_CLKDIV;
+         debug_iserdes_o(231 downto 231) <= DBG_CLKDIV4;
       end if;
    end process;
 
