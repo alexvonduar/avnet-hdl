@@ -9,12 +9,12 @@
 //  File name :       phasealigner.v
 //
 //  Description :     This module determines whether the Spartan-6 IOSERDES
-//                    has validate the incoming TMDS data stream 
-//                    
+//                    has validate the incoming TMDS data stream
 //
-//  Note:             
 //
-//  Author :    Bob Feng 
+//  Note:
+//
+//  Author :    Bob Feng
 //
 //  Disclaimer: LIMITED WARRANTY AND DISCLAMER. These designs are
 //              provided to you "as is". Xilinx and its licensors make and you
@@ -41,7 +41,7 @@
 //              limitation shall apply not-withstanding the failure of the
 //              essential purpose of any limited remedies herein.
 //
-//  Copyright © 2006 Xilinx, Inc.
+//  Copyright Â© 2006 Xilinx, Inc.
 //  All rights reserved
 //
 //////////////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ module phsaligner # (
   output reg        flipgear,
   output reg        bitslip,
   output reg        psaligned    // FSM output
-);  
+);
 
   ///////////////////////////////////////////////////////
   // Control Token Detection
@@ -135,7 +135,7 @@ module phsaligner # (
 
   reg [(nSTATES-1):0] cstate = {{(nSTATES-1){1'b0}}, 1'b1};  //current and next states
   reg [(nSTATES-1):0] nstate;
-  
+
 `ifdef SIMULATION
   // synthesis translate_off
   reg  [8*20:1] state_ascii = "INIT               ";

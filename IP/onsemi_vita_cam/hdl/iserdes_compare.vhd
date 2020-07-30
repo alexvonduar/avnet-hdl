@@ -44,132 +44,132 @@ library unisim;
 use unisim.vcomponents.all;
 
 entity iserdes_compare is
-  generic(
-        NROF_CONN       : integer
-       );
-  port(
-        CLOCK               : in    std_logic;
-        CLKDIV              : in    std_logic;
+    generic
+    (
+        NROF_CONN : integer
+    );
+    port
+    (
+        CLOCK : in std_logic;
+        CLKDIV : in std_logic;
 
-        RESET               : in    std_logic;
-        FIFO_EN             : in    std_logic;
+        RESET : in std_logic;
+        FIFO_EN : in std_logic;
 
-        SAMPLEINFIRSTBIT    : in    std_logic_vector(NROF_CONN-1 downto 0);
-        SAMPLEINLASTBIT     : in    std_logic_vector(NROF_CONN-1 downto 0);
-        SAMPLEINOTHERBIT    : in    std_logic_vector(NROF_CONN-1 downto 0);
+        SAMPLEINFIRSTBIT : in std_logic_vector(NROF_CONN - 1 downto 0);
+        SAMPLEINLASTBIT : in std_logic_vector(NROF_CONN - 1 downto 0);
+        SAMPLEINOTHERBIT : in std_logic_vector(NROF_CONN - 1 downto 0);
 
-        SKEW_ERROR          : out   std_logic;
+        SKEW_ERROR : out std_logic;
 
-        FIFO_WREN           : out   std_logic;
-        DELAY_WREN          : out   std_logic
-       );
+        FIFO_WREN : out std_logic;
+        DELAY_WREN : out std_logic
+    );
 
 end iserdes_compare;
 
 architecture rtl of iserdes_compare is
 
-signal FIRSTBIT_OR      : std_logic;
-signal LASTBIT_OR       : std_logic;
-signal OTHERBIT_OR      : std_logic;
+    signal FIRSTBIT_OR : std_logic;
+    signal LASTBIT_OR : std_logic;
+    signal OTHERBIT_OR : std_logic;
 
-signal DELAY_WREN_r     : std_logic;
-signal DELAY_WREN_r2    : std_logic;
+    signal DELAY_WREN_r : std_logic;
+    signal DELAY_WREN_r2 : std_logic;
 
-signal FIFO_WREN_r2     : std_logic;
+    signal FIFO_WREN_r2 : std_logic;
 
 begin
 
--- OR'ed status
-process (SAMPLEINFIRSTBIT)
-   variable TMP : std_logic;
-begin
-   TMP := '0';
-   for I in SAMPLEINFIRSTBIT'low to SAMPLEINFIRSTBIT'high loop
-      TMP := TMP or SAMPLEINFIRSTBIT(I);
-   end loop;
-   FIRSTBIT_OR <= TMP;
-end process;
+    -- OR'ed status
+    process (SAMPLEINFIRSTBIT)
+        variable TMP : std_logic;
+    begin
+        TMP := '0';
+        for I in SAMPLEINFIRSTBIT'low to SAMPLEINFIRSTBIT'high loop
+            TMP := TMP or SAMPLEINFIRSTBIT(I);
+        end loop;
+        FIRSTBIT_OR <= TMP;
+    end process;
 
-process (SAMPLEINLASTBIT)
-   variable TMP : std_logic;
-begin
-   TMP := '0';
-   for I in SAMPLEINLASTBIT'low to SAMPLEINLASTBIT'high loop
-      TMP := TMP or SAMPLEINLASTBIT(I);
-   end loop;
-   LASTBIT_OR <= TMP;
-end process;
+    process (SAMPLEINLASTBIT)
+        variable TMP : std_logic;
+    begin
+        TMP := '0';
+        for I in SAMPLEINLASTBIT'low to SAMPLEINLASTBIT'high loop
+            TMP := TMP or SAMPLEINLASTBIT(I);
+        end loop;
+        LASTBIT_OR <= TMP;
+    end process;
 
-process (SAMPLEINOTHERBIT)
-   variable TMP : std_logic;
-begin
-   TMP := '0';
-   for I in SAMPLEINOTHERBIT'low to SAMPLEINOTHERBIT'high loop
-      TMP := TMP or SAMPLEINOTHERBIT(I);
-   end loop;
-   OTHERBIT_OR <= TMP;
-end process;
+    process (SAMPLEINOTHERBIT)
+        variable TMP : std_logic;
+    begin
+        TMP := '0';
+        for I in SAMPLEINOTHERBIT'low to SAMPLEINOTHERBIT'high loop
+            TMP := TMP or SAMPLEINOTHERBIT(I);
+        end loop;
+        OTHERBIT_OR <= TMP;
+    end process;
 
-delayselector: process(RESET, CLOCK)
-    variable orstatus : std_logic_vector(2 downto 0);
-begin
-if (RESET = '1') then
-   SKEW_ERROR     <= '0';
-   DELAY_WREN_r   <= '0';
-elsif (CLOCK'event and CLOCK = '1') then
+    delayselector : process (RESET, CLOCK)
+        variable orstatus : std_logic_vector(2 downto 0);
+    begin
+        if (RESET = '1') then
+            SKEW_ERROR <= '0';
+            DELAY_WREN_r <= '0';
+        elsif (CLOCK'event and CLOCK = '1') then
 
-    orstatus := OTHERBIT_OR & LASTBIT_OR & FIRSTBIT_OR;
+            orstatus := OTHERBIT_OR & LASTBIT_OR & FIRSTBIT_OR;
 
-    case orstatus is
-        when "000" => --not yet trained             0
-            SKEW_ERROR     <= '0';
-            DELAY_WREN_r   <= '0';
-        when "001" => --all samples in first bit    1
-            SKEW_ERROR     <= '0';
-            DELAY_WREN_r   <= '0';
-        when "010" => --all samples in last bit     2
-            SKEW_ERROR     <= '0';
-            DELAY_WREN_r   <= '0';
-        when "100" => --all samples in other bit    4
-            SKEW_ERROR     <= '0';
-            DELAY_WREN_r   <= '0';
-        when "101" => --samples in first & other    5
-            SKEW_ERROR     <= '0';
-            DELAY_WREN_r   <= '0';
-        when "110" => --samples in lastt & other    6
-            SKEW_ERROR     <= '0';
-            DELAY_WREN_r   <= '0';
-        when "011" => --samples in first & last     3
-                      -- use special fifo enable to compensate word skew
-            SKEW_ERROR     <= '0';
-            DELAY_WREN_r   <= '1';
-        when "111" => --unsupported, too much skew  7
-            SKEW_ERROR     <= '1';
-            DELAY_WREN_r   <= '0';
-        when others =>
-            SKEW_ERROR     <= '0';
-            DELAY_WREN_r   <= '0';
-    end case;
-end if;
-end process delayselector;
+            case orstatus is
+                when "000" => --not yet trained             0
+                    SKEW_ERROR <= '0';
+                    DELAY_WREN_r <= '0';
+                when "001" => --all samples in first bit    1
+                    SKEW_ERROR <= '0';
+                    DELAY_WREN_r <= '0';
+                when "010" => --all samples in last bit     2
+                    SKEW_ERROR <= '0';
+                    DELAY_WREN_r <= '0';
+                when "100" => --all samples in other bit    4
+                    SKEW_ERROR <= '0';
+                    DELAY_WREN_r <= '0';
+                when "101" => --samples in first & other    5
+                    SKEW_ERROR <= '0';
+                    DELAY_WREN_r <= '0';
+                when "110" => --samples in lastt & other    6
+                    SKEW_ERROR <= '0';
+                    DELAY_WREN_r <= '0';
+                when "011" => --samples in first & last     3
+                    -- use special fifo enable to compensate word skew
+                    SKEW_ERROR <= '0';
+                    DELAY_WREN_r <= '1';
+                when "111" => --unsupported, too much skew  7
+                    SKEW_ERROR <= '1';
+                    DELAY_WREN_r <= '0';
+                when others =>
+                    SKEW_ERROR <= '0';
+                    DELAY_WREN_r <= '0';
+            end case;
+        end if;
+    end process delayselector;
 
-clockdomaincrossing: process(RESET, CLKDIV)
-begin
-if (RESET = '1') then
-    DELAY_WREN_r2 <= '0';
-    DELAY_WREN    <= '0';
+    clockdomaincrossing : process (RESET, CLKDIV)
+    begin
+        if (RESET = '1') then
+            DELAY_WREN_r2 <= '0';
+            DELAY_WREN <= '0';
 
-    FIFO_WREN     <= '0';
-    FIFO_WREN_r2  <= '0';
+            FIFO_WREN <= '0';
+            FIFO_WREN_r2 <= '0';
 
-elsif (CLKDIV'event and CLKDIV = '1') then
-   DELAY_WREN_r2    <= DELAY_WREN_r;
-   DELAY_WREN       <= DELAY_WREN_r2;
+        elsif (CLKDIV'event and CLKDIV = '1') then
+            DELAY_WREN_r2 <= DELAY_WREN_r;
+            DELAY_WREN <= DELAY_WREN_r2;
 
-   FIFO_WREN_r2     <= FIFO_EN;
-   FIFO_WREN        <= FIFO_WREN_r2;
-end if;
-end process clockdomaincrossing;
-
-
+            FIFO_WREN_r2 <= FIFO_EN;
+            FIFO_WREN <= FIFO_WREN_r2;
+        end if;
+    end process clockdomaincrossing;
 end rtl;
